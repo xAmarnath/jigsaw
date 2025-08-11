@@ -1,1 +1,961 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cosmic Jigsaw Quiz</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0e1a; /* Deep cosmic navy */
+            --card: #121726; /* Dark panel background */
+            --text: #e0e6ff; /* Starlight off-white */
+            --accent: #7c3aed; /* Nebula purple */
+            --accent-secondary: #10b981; /* Cosmic emerald */
+            --shadow: rgba(0, 0, 0, 0.7); /* Black hole shadow */
+            --glow: rgba(124, 58, 237, 0.2); /* Nebula glow */
+            font-family: 'Inter', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            min-height: 100vh;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(124, 58, 237, 0.15), transparent 30%),
+                radial-gradient(circle at 80% 80%, rgba(16, 185, 129, 0.1), transparent 25%),
+                linear-gradient(135deg, var(--bg) 0%, #1a2238 50%, var(--bg) 100%);
+            color: var(--text);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                linear-gradient(45deg, transparent, rgba(124, 58, 237, 0.05), transparent),
+                url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><circle cx="50" cy="50" r="1" fill="rgba(255,255,255,0.3)"/></svg>') repeat;
+            background-size: 100px 100px;
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0.6;
+        }
+
+        /* Space debris animation */
+        .debris {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .debris span {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
+            animation: float 10s linear infinite;
+            opacity: 0.7;
+        }
+
+        .debris span:nth-child(2n) {
+            width: 2px;
+            height: 2px;
+            animation-duration: 12s;
+            opacity: 0.5;
+        }
+
+        .debris span:nth-child(3n) {
+            width: 4px;
+            height: 4px;
+            animation-duration: 8s;
+            opacity: 0.8;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translate(0, 0);
+                opacity: 0.7;
+            }
+            100% {
+                transform: translate(100vw, 100vh);
+                opacity: 0;
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        h1 {
+            font-size: clamp(28px, 5vw, 36px);
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 10px var(--glow);
+            margin-bottom: 12px;
+        }
+
+        .level-info {
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.05) 0%, 
+                rgba(18, 23, 38, 0.9) 100%
+            );
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 12px;
+            padding: 20px 32px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 
+                0 8px 24px var(--shadow),
+                inset 0 1px 1px rgba(255, 255, 255, 0.05);
+            margin-bottom: 24px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .level-info:hover {
+            box-shadow: 
+                0 12px 32px var(--shadow),
+                0 0 20px var(--glow);
+            transform: translateY(-2px);
+        }
+
+        .level-info::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, 
+                transparent, 
+                var(--accent), 
+                transparent
+            );
+        }
+
+        .level-text {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--accent);
+            margin-bottom: 8px;
+        }
+
+        .progress {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .game-container {
+            max-width: 640px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        #grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            aspect-ratio: 1;
+            margin: 24px auto;
+            background: linear-gradient(135deg, 
+                rgba(18, 23, 38, 0.8) 0%, 
+                rgba(12, 16, 28, 0.9) 100%
+            );
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: 16px;
+            padding: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 
+                0 16px 48px var(--shadow),
+                inset 0 1px 1px rgba(255, 255, 255, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        #grid::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 50% 50%, rgba(124, 58, 237, 0.1), transparent 50%);
+            border-radius: 16px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        #grid > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .puzzle-piece {
+            aspect-ratio: 1;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.05) 0%, 
+                rgba(18, 23, 38, 0.9) 100%
+            );
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 
+                0 4px 12px var(--shadow),
+                inset 0 1px 1px rgba(255, 255, 255, 0.05);
+            animation: pulse 3s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 
+                    0 4px 12px var(--shadow),
+                    0 0 8px var(--glow);
+            }
+            50% {
+                box-shadow: 
+                    0 4px 12px var(--shadow),
+                    0 0 12px var(--glow);
+            }
+        }
+
+        .puzzle-piece:hover {
+            transform: scale(1.05) translateY(-3px);
+            box-shadow: 
+                0 12px 24px var(--shadow),
+                0 0 16px var(--glow);
+            border-color: var(--accent);
+            background: linear-gradient(135deg, 
+                rgba(124, 58, 237, 0.15) 0%, 
+                rgba(18, 23, 38, 0.9) 100%
+            );
+        }
+
+        .puzzle-piece.revealed {
+            background: linear-gradient(135deg, 
+                rgba(124, 58, 237, 0.2) 0%, 
+                rgba(16, 185, 129, 0.15) 100%
+            );
+            border-color: var(--accent);
+            box-shadow: 
+                0 8px 20px var(--shadow),
+                0 0 12px var(--glow);
+            animation: none;
+        }
+
+        .puzzle-piece.revealed:hover {
+            transform: scale(1.03) translateY(-2px);
+            box-shadow: 
+                0 12px 28px var(--shadow),
+                0 0 16px var(--glow);
+        }
+
+        .piece-number {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: clamp(14px, 2.5vw, 18px);
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 8px var(--glow);
+            z-index: 10;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .piece-number.fade-out {
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(1.4) rotate(10deg);
+            text-shadow: 0 0 12px var(--glow);
+        }
+
+        .puzzle-piece svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .hidden-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, 
+                rgba(10, 14, 26, 0.95) 0%, 
+                rgba(18, 23, 38, 0.9) 100%
+            );
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.05);
+        }
+
+        .hidden-overlay.revealing {
+            opacity: 0;
+            transform: scale(0.9) rotate(3deg);
+            backdrop-filter: blur(0px);
+            -webkit-backdrop-filter: blur(0px);
+        }
+
+        .controls {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 32px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, 
+                var(--accent) 0%, 
+                var(--accent-secondary) 100%
+            );
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            color: var(--text);
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: 'Inter', sans-serif;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 
+                0 4px 12px var(--shadow),
+                inset 0 1px 1px rgba(255, 255, 255, 0.1);
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, 
+                transparent, 
+                rgba(255, 255, 255, 0.15), 
+                transparent
+            );
+            transition: left 0.4s ease;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                0 8px 20px var(--shadow),
+                0 0 12px var(--glow);
+            background: linear-gradient(135deg, 
+                var(--accent) 0%, 
+                var(--accent-secondary) 80%
+            );
+        }
+
+        .btn:active {
+            transform: translateY(0);
+            box-shadow: 
+                0 4px 12px var(--shadow),
+                inset 0 1px 1px rgba(255, 255, 255, 0.1);
+        }
+
+        .btn.secondary {
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.05) 0%, 
+                rgba(18, 23, 38, 0.9) 100%
+            );
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            color: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 
+                0 4px 12px var(--shadow),
+                inset 0 1px 1px rgba(255, 255, 255, 0.05);
+        }
+
+        .btn.secondary:hover {
+            color: var(--text);
+            border-color: var(--accent);
+            box-shadow: 
+                0 8px 20px var(--shadow),
+                0 0 12px var(--glow);
+        }
+
+        .btn:disabled {
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.05) 0%, 
+                rgba(18, 23, 38, 0.9) 100%
+            );
+            color: rgba(255, 255, 255, 0.4);
+            cursor: not-allowed;
+            box-shadow: none;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .btn:disabled:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .stats {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            margin-top: 24px;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.05) 0%, 
+                rgba(18, 23, 38, 0.9) 100%
+            );
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 14px 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            text-align: center;
+            min-width: 100px;
+            transition: all 0.3s ease;
+            box-shadow: 
+                0 4px 12px var(--shadow),
+                inset 0 1px 1px rgba(255, 255, 255, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, 
+                transparent, 
+                var(--accent), 
+                transparent
+            );
+        }
+
+        .stat-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                0 8px 20px var(--shadow),
+                0 0 12px var(--glow);
+            border-color: var(--accent);
+        }
+
+        .stat-value {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 6px;
+        }
+
+        .completion-message {
+            background: linear-gradient(135deg, 
+                rgba(124, 58, 237, 0.2) 0%, 
+                rgba(16, 185, 129, 0.15) 100%
+            );
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--accent);
+            border-radius: 12px;
+            padding: 24px;
+            margin-top: 24px;
+            text-align: center;
+            display: none;
+            box-shadow: 
+                0 12px 32px var(--shadow),
+                0 0 16px var(--glow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .completion-message::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, 
+                transparent, 
+                var(--accent), 
+                transparent
+            );
+        }
+
+        .completion-message.show {
+            display: block;
+            animation: slideUpGlass 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes slideUpGlass {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.95);
+                backdrop-filter: blur(4px);
+                -webkit-backdrop-filter: blur(4px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+                backdrop-filter: blur(12px);
+                -webkit-backdrop-filter: blur(12px);
+            }
+        }
+
+        @keyframes revealSuccess {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.08);
+                box-shadow: 
+                    0 0 20px var(--glow),
+                    0 8px 24px var(--shadow);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .completion-message h3 {
+            color: var(--accent);
+            font-size: 26px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            text-shadow: 0 0 8px var(--glow);
+        }
+
+        .completion-message p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 16px;
+        }
+
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+                align-items: center;
+                gap: 12px;
+            }
+
+            .btn {
+                width: 180px;
+                padding: 10px 20px;
+                font-size: 14px;
+            }
+
+            .stats {
+                gap: 12px;
+            }
+
+            .stat-item {
+                min-width: 90px;
+                padding: 12px 16px;
+            }
+
+            #grid {
+                gap: 6px;
+                padding: 12px;
+                border-radius: 12px;
+            }
+
+            .puzzle-piece {
+                border-radius: 6px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 16px;
+            }
+
+            .header {
+                margin-bottom: 16px;
+            }
+
+            h1 {
+                font-size: clamp(24px, 4.5vw, 30px);
+            }
+
+            .level-info {
+                padding: 16px 24px;
+                border-radius: 10px;
+            }
+
+            #grid {
+                gap: 4px;
+                padding: 10px;
+                border-radius: 10px;
+            }
+
+            .puzzle-piece {
+                border-radius: 4px;
+            }
+
+            .piece-number {
+                font-size: clamp(12px, 2vw, 16px);
+            }
+
+            .btn {
+                padding: 10px 16px;
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="debris">
+        <span style="left: 10%; top: 20%; animation-delay: 0s;"></span>
+        <span style="left: 30%; top: 50%; animation-delay: 2s;"></span>
+        <span style="left: 50%; top: 10%; animation-delay: 4s;"></span>
+        <span style="left: 70%; top: 60%; animation-delay: 6s;"></span>
+        <span style="left: 20%; top: 80%; animation-delay: 8s;"></span>
+        <span style="left: 80%; top: 30%; animation-delay: 10s;"></span>
+        <span style="left: 40%; top: 40%; animation-delay: 12s;"></span>
+        <span style="left: 60%; top: 70%; animation-delay: 14s;"></span>
+    </div>
+
+    <div class="header">
+        <h1>🌌 Cosmic Jigsaw Quiz</h1>
+        <div class="level-info">
+            <div class="level-text" id="level-text">Star System 1</div>
+            <div class="progress" id="progress-text">0 / 16 sectors explored</div>
+        </div>
+    </div>
+
+    <div class="game-container">
+        <div id="grid"></div>
+        
+        <div class="controls">
+            <button class="btn" id="previous-btn" onclick="previousLevel()">⬅️ Previous Star System</button>
+            <button class="btn" onclick="revealHint()">🔍 Scan Sector</button>
+            <button class="btn secondary" onclick="resetLevel()">🔄 Recalibrate</button>
+            <button class="btn" onclick="nextLevel()">➡️ Next Star System</button>
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-value" id="revealed-count">0</div>
+                <div class="stat-label">Sectors Explored</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="hints-used">0</div>
+                <div class="stat-label">Scans Used</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="time-elapsed">0s</div>
+                <div class="stat-label">Mission Time</div>
+            </div>
+        </div>
+
+        <div class="completion-message" id="completion-message">
+            <h3>🌟 Star System Conquered!</h3>
+            <p>Well done, explorer! You've uncovered all sectors of this system.</p>
+        </div>
+    </div>
+
+    <script>
+        let currentLevel = parseInt(localStorage.getItem('currentLevel') || '1');
+        let imgData = localStorage.getItem('level' + currentLevel);
+        let revealedPieces = [];
+        let hintsUsed = 0;
+        let startTime = Date.now();
+        let gameTimer = null;
+
+        function loadLevel() {
+            document.getElementById('level-text').textContent = `Star System ${currentLevel}`;
+            imgData = localStorage.getItem('level' + currentLevel);
+            revealedPieces = [];
+            hintsUsed = 0;
+            startTime = Date.now();
+            
+            if (!imgData) {
+                document.getElementById('grid').innerHTML = `
+                    <div style="grid-column: span 4; text-align: center; padding: 40px; color: rgba(255, 255, 255, 0.6);">
+                        <h3>No data found for this star system</h3>
+                        <p>Please upload an image in the mission control panel</p>
+                    </div>
+                `;
+                document.getElementById('previous-btn').disabled = currentLevel === 1;
+                return;
+            }
+            
+            createGrid();
+            updateStats();
+            startTimer();
+            document.getElementById('completion-message').classList.remove('show');
+            document.getElementById('previous-btn').disabled = currentLevel === 1;
+        }
+
+        function createGrid() {
+            const grid = document.getElementById('grid');
+            grid.innerHTML = '';
+            
+            for (let i = 0; i < 16; i++) {
+                const row = Math.floor(i / 4);
+                const col = i % 4;
+                const piece = createPuzzlePiece(i, row, col);
+                grid.appendChild(piece);
+            }
+        }
+
+        function createPuzzlePiece(index, row, col) {
+            const piece = document.createElement('div');
+            piece.className = 'puzzle-piece';
+            piece.dataset.index = index;
+            
+            const svgNS = "http://www.w3.org/2000/svg";
+            const svg = document.createElementNS(svgNS, "svg");
+            svg.setAttribute("viewBox", "0 0 100 100");
+            svg.style.display = 'none';
+            
+            const clipPathId = `clip${index}`;
+            const defs = document.createElementNS(svgNS, "defs");
+            const clipPath = document.createElementNS(svgNS, "clipPath");
+            clipPath.setAttribute("id", clipPathId);
+            
+            const path = document.createElementNS(svgNS, "path");
+            path.setAttribute("d", getPuzzlePath(row, col));
+            clipPath.appendChild(path);
+            defs.appendChild(clipPath);
+            svg.appendChild(defs);
+            
+            const image = document.createElementNS(svgNS, "image");
+            image.setAttribute("href", imgData);
+            image.setAttribute("width", "400");
+            image.setAttribute("height", "400");
+            image.setAttribute("x", -col * 100);
+            image.setAttribute("y", -row * 100);
+            image.setAttribute("clip-path", `url(#${clipPathId})`);
+            image.setAttribute("preserveAspectRatio", "xMidYMid slice");
+            svg.appendChild(image);
+            
+            const overlay = document.createElement('div');
+            overlay.className = 'hidden-overlay';
+            
+            const number = document.createElement('div');
+            number.className = 'piece-number';
+            number.textContent = index + 1;
+            overlay.appendChild(number);
+            
+            piece.appendChild(svg);
+            piece.appendChild(overlay);
+            
+            piece.addEventListener('click', () => revealPiece(piece, index));
+            
+            return piece;
+        }
+
+        function getPuzzlePath(row, col) {
+            const knobSize = 15;
+            let path = "M0,0 ";
+            
+            if (row > 0) {
+                const knobOut = (row + col) % 2 === 0;
+                if (knobOut) {
+                    path += `L${40-knobSize},0 Q${40-knobSize},${-knobSize} ${40},${-knobSize} Q${40+knobSize},${-knobSize} ${40+knobSize},0 L100,0 `;
+                } else {
+                    path += `L${40-knobSize},0 Q${40-knobSize},${knobSize} ${40},${knobSize} Q${40+knobSize},${knobSize} ${40+knobSize},0 L100,0 `;
+                }
+            } else {
+                path += "L100,0 ";
+            }
+            
+            if (col < 3) {
+                const knobOut = (row + col + 1) % 2 === 0;
+                if (knobOut) {
+                    path += `L100,${40-knobSize} Q${100+knobSize},${40-knobSize} ${100+knobSize},${40} Q${100+knobSize},${40+knobSize} 100,${40+knobSize} L100,100 `;
+                } else {
+                    path += `L100,${40-knobSize} Q${100-knobSize},${40-knobSize} ${100-knobSize},${40} Q${100-knobSize},${40+knobSize} 100,${40+knobSize} L100,100 `;
+                }
+            } else {
+                path += "L100,100 ";
+            }
+            
+            if (row < 3) {
+                const knobOut = (row + col + 2) % 2 === 0;
+                if (knobOut) {
+                    path += `L${40+knobSize},100 Q${40+knobSize},${100+knobSize} ${40},${100+knobSize} Q${40-knobSize},${100+knobSize} ${40-knobSize},100 L0,100 `;
+                } else {
+                    path += `L${40+knobSize},100 Q${40+knobSize},${100-knobSize} ${40},${100-knobSize} Q${40-knobSize},${100-knobSize} ${40-knobSize},100 L0,100 `;
+                }
+            } else {
+                path += "L0,100 ";
+            }
+            
+            if (col > 0) {
+                const knobOut = (row + col + 3) % 2 === 0;
+                if (knobOut) {
+                    path += `L0,${40+knobSize} Q${-knobSize},${40+knobSize} ${-knobSize},${40} Q${-knobSize},${40-knobSize} 0,${40-knobSize} Z`;
+                } else {
+                    path += `L0,${40+knobSize} Q${knobSize},${40+knobSize} ${knobSize},${40} Q${knobSize},${40-knobSize} 0,${40-knobSize} Z`;
+                }
+            } else {
+                path += "L0,0 Z";
+            }
+            
+            return path;
+        }
+
+        function revealPiece(piece, index) {
+            if (revealedPieces.includes(index)) return;
+            
+            const overlay = piece.querySelector('.hidden-overlay');
+            const svg = piece.querySelector('svg');
+            const number = piece.querySelector('.piece-number');
+            
+            number.classList.add('fade-out');
+            overlay.classList.add('revealing');
+            
+            setTimeout(() => {
+                if (svg) {
+                    svg.style.display = 'block';
+                }
+                if (overlay) {
+                    overlay.style.display = 'none';
+                }
+                piece.classList.add('revealed');
+            }, 300);
+            
+            revealedPieces.push(index);
+            updateStats();
+            
+            piece.style.animation = 'revealSuccess 0.6s ease-out';
+            setTimeout(() => {
+                piece.style.animation = '';
+            }, 600);
+            
+            if (revealedPieces.length === 16) {
+                setTimeout(() => {
+                    document.getElementById('completion-message').classList.add('show');
+                    stopTimer();
+                }, 500);
+            }
+        }
+
+        function revealHint() {
+            const hiddenPieces = [];
+            for (let i = 0; i < 16; i++) {
+                if (!revealedPieces.includes(i)) {
+                    hiddenPieces.push(i);
+                }
+            }
+            
+            if (hiddenPieces.length === 0) return;
+            
+            const randomIndex = hiddenPieces[Math.floor(Math.random() * hiddenPieces.length)];
+            const piece = document.querySelector(`[data-index="${randomIndex}"]`);
+            
+            hintsUsed++;
+            revealPiece(piece, randomIndex);
+        }
+
+        function resetLevel() {
+            revealedPieces = [];
+            hintsUsed = 0;
+            startTime = Date.now();
+            createGrid();
+            updateStats();
+            startTimer();
+            document.getElementById('completion-message').classList.remove('show');
+        }
+
+        function nextLevel() {
+            if (currentLevel < 5) {
+                currentLevel++;
+                localStorage.setItem('currentLevel', currentLevel);
+                loadLevel();
+            } else {
+                alert('🌠 Mission Complete! You\'ve explored all star systems!');
+            }
+        }
+
+        function previousLevel() {
+            if (currentLevel > 1) {
+                currentLevel--;
+                localStorage.setItem('currentLevel', currentLevel);
+                loadLevel();
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('revealed-count').textContent = revealedPieces.length;
+            document.getElementById('hints-used').textContent = hintsUsed;
+            document.getElementById('progress-text').textContent = `${revealedPieces.length} / 16 sectors explored`;
+        }
+
+        function startTimer() {
+            stopTimer();
+            gameTimer = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                document.getElementById('time-elapsed').textContent = `${elapsed}s`;
+            }, 1000);
+        }
+
+        function stopTimer() {
+            if (gameTimer) {
+                clearInterval(gameTimer);
+                gameTimer = null;
+            }
+        }
+
+        // Initialize the game
+        loadLevel();
+    </script>
+</body>
+</html>
