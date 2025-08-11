@@ -1227,6 +1227,86 @@
     </div>
 
     <script>
+        // IndexedDB Database Management
+        let db = null;
+        const DB_NAME = 'CosmicQuizDB';
+        const DB_VERSION = 1;
+        const STORE_NAME = 'images';
+
+        // Initialize IndexedDB
+        function initDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+                
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => {
+                    db = request.result;
+                    resolve(db);
+                };
+                
+                request.onupgradeneeded = (event) => {
+                    const database = event.target.result;
+                    if (!database.objectStoreNames.contains(STORE_NAME)) {
+                        database.createObjectStore(STORE_NAME, { keyPath: 'level' });
+                    }
+                };
+            });
+        }
+
+        // Store image in IndexedDB
+        function storeImage(level, imageData) {
+            return new Promise((resolve, reject) => {
+                if (!db) {
+                    reject(new Error('Database not initialized'));
+                    return;
+                }
+                
+                const transaction = db.transaction([STORE_NAME], 'readwrite');
+                const store = transaction.objectStore(STORE_NAME);
+                const request = store.put({ level: level, data: imageData });
+                
+                request.onsuccess = () => resolve();
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        // Get image from IndexedDB
+        function getImage(level) {
+            return new Promise((resolve, reject) => {
+                if (!db) {
+                    reject(new Error('Database not initialized'));
+                    return;
+                }
+                
+                const transaction = db.transaction([STORE_NAME], 'readonly');
+                const store = transaction.objectStore(STORE_NAME);
+                const request = store.get(level);
+                
+                request.onsuccess = () => {
+                    const result = request.result;
+                    resolve(result ? result.data : null);
+                };
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        // Delete image from IndexedDB
+        function deleteImage(level) {
+            return new Promise((resolve, reject) => {
+                if (!db) {
+                    reject(new Error('Database not initialized'));
+                    return;
+                }
+                
+                const transaction = db.transaction([STORE_NAME], 'readwrite');
+                const store = transaction.objectStore(STORE_NAME);
+                const request = store.delete(level);
+                
+                request.onsuccess = () => resolve();
+                request.onerror = () => reject(request.error);
+            });
+        }
+
         // Global variables for grid dimensions
         const GRID_WIDTH = 5; // Number of columns
         const GRID_HEIGHT = 5; // Number of rows
@@ -1236,15 +1316,22 @@
         document.documentElement.style.setProperty('--grid-aspect', GRID_WIDTH / GRID_HEIGHT);
 
         let currentLevel = parseInt(localStorage.getItem('currentLevel') || '1');
-        let imgData = localStorage.getItem('level' + currentLevel);
+        let imgData = null;
         let revealedPieces = [];
         let hintsUsed = 0;
         let startTime = Date.now();
         let gameTimer = null;
 
-        function loadLevel() {
+        async function loadLevel() {
             document.getElementById('level-text').textContent = `Star System ${currentLevel}`;
-            imgData = localStorage.getItem('level' + currentLevel);
+            
+            try {
+                imgData = await getImage(`level${currentLevel}`);
+            } catch (error) {
+                console.error('Error loading image:', error);
+                imgData = null;
+            }
+            
             revealedPieces = [];
             hintsUsed = 0;
             startTime = Date.now();
@@ -1445,21 +1532,21 @@
             document.getElementById('completion-message').classList.remove('show');
         }
 
-        function nextLevel() {
+        async function nextLevel() {
             if (currentLevel < 5) {
                 currentLevel++;
                 localStorage.setItem('currentLevel', currentLevel);
-                loadLevel();
+                await loadLevel();
             } else {
                 alert('🌠 Mission Complete! You\'ve explored all star systems!');
             }
         }
 
-        function previousLevel() {
+        async function previousLevel() {
             if (currentLevel > 1) {
                 currentLevel--;
                 localStorage.setItem('currentLevel', currentLevel);
-                loadLevel();
+                await loadLevel();
             }
         }
 
@@ -1569,13 +1656,30 @@
             });
         }
 
-        // Initialize the game
-        loadLevel();
-        
-        // Set up keyboard navigation after grid is created
-        setTimeout(() => {
-            makeGridFocusable();
-        }, 100);
+        // Initialize the game with IndexedDB
+        async function initGame() {
+            try {
+                await initDB();
+                await loadLevel();
+                
+                // Set up keyboard navigation after grid is created
+                setTimeout(() => {
+                    makeGridFocusable();
+                }, 100);
+            } catch (error) {
+                console.error('Failed to initialize game:', error);
+                // Fallback to show error message
+                document.getElementById('grid').innerHTML = `
+                    <div style="grid-column: span ${GRID_WIDTH}; text-align: center; padding: 40px; color: rgba(255, 107, 107, 0.8);">
+                        <h3>⚠️ Database Error</h3>
+                        <p>Failed to initialize image storage. Please refresh the page.</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Start the game
+        initGame();
     </script>
 </body>
 </html>
