@@ -169,14 +169,85 @@
         }
 
         .game-container {
-            max-width: 640px;
+            max-width: 900px; /* Increased for desktop */
             width: 100%;
             margin: 0 auto;
         }
 
+        /* Desktop-specific enhancements */
+        @media (min-width: 1024px) {
+            .game-container {
+                max-width: 1100px;
+                padding: 20px;
+            }
+
+            .main-layout {
+                display: grid;
+                grid-template-columns: 1fr 320px;
+                gap: 40px;
+                align-items: start;
+            }
+
+            .game-section {
+                grid-column: 1;
+            }
+
+            .controls-section {
+                grid-column: 2;
+                position: sticky;
+                top: 20px;
+            }
+
+            .controls {
+                flex-direction: column;
+                gap: 12px;
+                margin: 0;
+            }
+
+            .btn {
+                width: 100%;
+                padding: 14px 28px;
+                font-size: 16px;
+                border-radius: 12px;
+            }
+
+            .stats {
+                flex-direction: column;
+                gap: 12px;
+                margin: 24px 0 0 0;
+            }
+
+            .stat-item {
+                width: 100%;
+                padding: 18px 24px;
+            }
+
+            .level-info {
+                padding: 24px 40px;
+                margin-bottom: 32px;
+            }
+
+            .level-text {
+                font-size: 24px;
+            }
+
+            .progress {
+                font-size: 16px;
+            }
+
+            h1 {
+                font-size: 48px;
+                margin-bottom: 16px;
+            }
+
+            .header {
+                margin-bottom: 40px;
+            }
+        }
+
         #grid {
             display: grid;
-            gap: 8px;
+            gap: 10px; /* Increased gap for desktop */
             aspect-ratio: var(--grid-aspect); /* Set dynamically */
             margin: 24px auto;
             background: linear-gradient(135deg, 
@@ -186,13 +257,31 @@
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
             border-radius: 16px;
-            padding: 16px;
+            padding: 20px; /* Increased padding */
             border: 1px solid rgba(255, 255, 255, 0.05);
             box-shadow: 
                 0 16px 48px var(--shadow),
                 inset 0 1px 1px rgba(255, 255, 255, 0.05);
             position: relative;
             overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        /* Enhanced desktop grid */
+        @media (min-width: 1024px) {
+            #grid {
+                gap: 12px;
+                padding: 24px;
+                margin: 32px 0;
+            }
+
+            #grid:hover {
+                box-shadow: 
+                    0 20px 60px var(--shadow),
+                    0 0 24px var(--glow),
+                    inset 0 1px 1px rgba(255, 255, 255, 0.08);
+                transform: translateY(-2px);
+            }
         }
 
         #grid::before {
@@ -217,7 +306,7 @@
             aspect-ratio: 1;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border-radius: 8px;
+            border-radius: 10px; /* Slightly larger radius */
             overflow: hidden;
             position: relative;
             background: linear-gradient(135deg, 
@@ -231,6 +320,57 @@
                 0 4px 12px var(--shadow),
                 inset 0 1px 1px rgba(255, 255, 255, 0.05);
             animation: pulse 3s ease-in-out infinite;
+        }
+
+        /* Enhanced desktop puzzle piece interactions */
+        @media (min-width: 1024px) {
+            .puzzle-piece {
+                border-radius: 12px;
+                transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+
+            .puzzle-piece:hover {
+                transform: scale(1.08) translateY(-4px) rotateY(5deg);
+                box-shadow: 
+                    0 16px 32px var(--shadow),
+                    0 0 20px var(--glow);
+                border-color: var(--accent);
+                background: linear-gradient(135deg, 
+                    rgba(124, 58, 237, 0.2) 0%, 
+                    rgba(18, 23, 38, 0.9) 100%
+                );
+                z-index: 10;
+            }
+
+            .puzzle-piece:active {
+                transform: scale(1.02) translateY(-1px);
+                transition: all 0.1s ease;
+            }
+
+            /* Keyboard navigation support */
+            .puzzle-piece:focus {
+                outline: 2px solid var(--accent);
+                outline-offset: 2px;
+                transform: scale(1.05);
+                box-shadow: 
+                    0 12px 24px var(--shadow),
+                    0 0 16px var(--glow);
+            }
+
+            /* Enhanced completion message for desktop */
+            .completion-message {
+                max-width: 800px;
+                padding: 32px 40px;
+                border-radius: 16px;
+            }
+
+            .completion-message h3 {
+                font-size: 32px;
+            }
+
+            .completion-message p {
+                font-size: 18px;
+            }
         }
 
         @keyframes pulse {
@@ -291,6 +431,15 @@
             text-shadow: 0 0 8px var(--glow);
             z-index: 10;
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none;
+        }
+
+        /* Enhanced desktop piece numbers */
+        @media (min-width: 1024px) {
+            .piece-number {
+                font-size: 20px;
+                font-weight: 700;
+            }
         }
 
         .piece-number.fade-out {
@@ -360,6 +509,27 @@
             box-shadow: 
                 0 4px 12px var(--shadow),
                 inset 0 1px 1px rgba(255, 255, 255, 0.1);
+            user-select: none;
+        }
+
+        /* Enhanced desktop button interactions */
+        @media (min-width: 1024px) {
+            .btn {
+                font-size: 16px;
+                padding: 14px 28px;
+            }
+
+            .btn:focus {
+                outline: 2px solid var(--accent-secondary);
+                outline-offset: 2px;
+            }
+
+            .btn:focus:not(:hover) {
+                transform: translateY(-1px);
+                box-shadow: 
+                    0 6px 16px var(--shadow),
+                    0 0 8px var(--glow);
+            }
         }
 
         .btn::before {
@@ -675,33 +845,39 @@
     </div>
 
     <div class="game-container">
-        <div id="grid"></div>
-        
-        <div class="controls">
-            <button class="btn" id="previous-btn" onclick="previousLevel()">⬅️ Previous Star System</button>
-            <button class="btn" onclick="revealHint()">🔍 Scan Sector</button>
-            <button class="btn secondary" onclick="resetLevel()">🔄 Recalibrate</button>
-            <button class="btn" onclick="nextLevel()">➡️ Next Star System</button>
-        </div>
+        <div class="main-layout">
+            <div class="game-section">
+                <div id="grid"></div>
+                
+                <div class="completion-message" id="completion-message">
+                    <h3>🌟 Star System Conquered!</h3>
+                    <p>Well done, explorer! You've uncovered all sectors of this system.</p>
+                </div>
+            </div>
 
-        <div class="stats">
-            <div class="stat-item">
-                <div class="stat-value" id="revealed-count">0</div>
-                <div class="stat-label">Sectors Explored</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-value" id="hints-used">0</div>
-                <div class="stat-label">Scans Used</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-value" id="time-elapsed">0s</div>
-                <div class="stat-label">Mission Time</div>
-            </div>
-        </div>
+            <div class="controls-section">
+                <div class="controls">
+                    <button class="btn" id="previous-btn" onclick="previousLevel()">⬅️ Previous Star System</button>
+                    <button class="btn" onclick="revealHint()">🔍 Scan Sector</button>
+                    <button class="btn secondary" onclick="resetLevel()">🔄 Recalibrate</button>
+                    <button class="btn" onclick="nextLevel()">➡️ Next Star System</button>
+                </div>
 
-        <div class="completion-message" id="completion-message">
-            <h3>🌟 Star System Conquered!</h3>
-            <p>Well done, explorer! You've uncovered all sectors of this system.</p>
+                <div class="stats">
+                    <div class="stat-item">
+                        <div class="stat-value" id="revealed-count">0</div>
+                        <div class="stat-label">Sectors Explored</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="hints-used">0</div>
+                        <div class="stat-label">Scans Used</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="time-elapsed">0s</div>
+                        <div class="stat-label">Mission Time</div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -963,8 +1139,98 @@
             }
         }
 
+        // Enhanced keyboard navigation for desktop
+        document.addEventListener('keydown', (e) => {
+            if (e.target.tagName === 'BUTTON') return; // Don't interfere with button navigation
+            
+            const pieces = document.querySelectorAll('.puzzle-piece');
+            const focusedElement = document.activeElement;
+            let currentIndex = -1;
+            
+            // Find currently focused piece
+            pieces.forEach((piece, index) => {
+                if (piece === focusedElement) {
+                    currentIndex = index;
+                }
+            });
+            
+            let newIndex = currentIndex;
+            
+            switch(e.key) {
+                case 'ArrowLeft':
+                    e.preventDefault();
+                    newIndex = Math.max(0, currentIndex - 1);
+                    break;
+                case 'ArrowRight':
+                    e.preventDefault();
+                    newIndex = Math.min(pieces.length - 1, currentIndex + 1);
+                    break;
+                case 'ArrowUp':
+                    e.preventDefault();
+                    newIndex = Math.max(0, currentIndex - GRID_WIDTH);
+                    break;
+                case 'ArrowDown':
+                    e.preventDefault();
+                    newIndex = Math.min(pieces.length - 1, currentIndex + GRID_WIDTH);
+                    break;
+                case 'Enter':
+                case ' ':
+                    e.preventDefault();
+                    if (currentIndex >= 0 && pieces[currentIndex]) {
+                        pieces[currentIndex].click();
+                    }
+                    break;
+                case 'h':
+                case 'H':
+                    e.preventDefault();
+                    revealHint();
+                    break;
+                case 'r':
+                case 'R':
+                    e.preventDefault();
+                    resetLevel();
+                    break;
+                case 'n':
+                case 'N':
+                    e.preventDefault();
+                    nextLevel();
+                    break;
+                case 'p':
+                case 'P':
+                    e.preventDefault();
+                    previousLevel();
+                    break;
+            }
+            
+            // Focus the new piece
+            if (newIndex !== currentIndex && pieces[newIndex]) {
+                pieces[newIndex].focus();
+                pieces[newIndex].setAttribute('tabindex', '0');
+                
+                // Remove tabindex from other pieces
+                pieces.forEach((piece, index) => {
+                    if (index !== newIndex) {
+                        piece.setAttribute('tabindex', '-1');
+                    }
+                });
+            }
+        });
+
+        // Make puzzle pieces focusable
+        function makeGridFocusable() {
+            const pieces = document.querySelectorAll('.puzzle-piece');
+            pieces.forEach((piece, index) => {
+                piece.setAttribute('tabindex', index === 0 ? '0' : '-1');
+            });
+        }
+
         // Initialize the game
         loadLevel();
+        
+        // Set up keyboard navigation after grid is created
+        setTimeout(() => {
+            makeGridFocusable();
+        }, 100);
     </script>
 </body>
 </html>
