@@ -542,7 +542,7 @@
 
         #grid {
             display: grid;
-            gap: 10px; /* Increased gap for desktop */
+            gap: 3px; /* Reduced gap for tighter puzzle look */
             aspect-ratio: var(--grid-aspect); /* Set dynamically */
             margin: 24px auto;
             background: linear-gradient(135deg, 
@@ -552,7 +552,7 @@
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
             border-radius: 16px;
-            padding: 20px; /* Increased padding */
+            padding: 15px; /* Reduced padding */
             border: 1px solid rgba(255, 255, 255, 0.05);
             box-shadow: 
                 0 16px 48px var(--shadow),
@@ -565,8 +565,8 @@
         /* Enhanced desktop grid */
         @media (min-width: 1024px) {
             #grid {
-                gap: 12px;
-                padding: 24px;
+                gap: 4px; /* Still reduced for desktop */
+                padding: 18px;
                 margin: 32px 0;
             }
 
@@ -1070,8 +1070,8 @@
             }
 
             #grid {
-                gap: 6px;
-                padding: 12px;
+                gap: 2px; /* Even tighter for mobile */
+                padding: 10px;
                 border-radius: 12px;
             }
 
@@ -1099,8 +1099,8 @@
             }
 
             #grid {
-                gap: 4px;
-                padding: 10px;
+                gap: 2px; /* Minimal spacing for smallest screens */
+                padding: 8px;
                 border-radius: 10px;
             }
 
@@ -1204,6 +1204,7 @@
                 <div class="controls">
                     <button class="btn" id="previous-btn" onclick="previousLevel()">⬅️ Previous Level</button>
                     <button class="btn" onclick="revealHint()">💡 Hint</button>
+                    <button class="btn secondary" onclick="revealFullImage()">👁️ Reveal Image</button>
                     <button class="btn secondary" onclick="resetLevel()">🔄 Reset</button>
                     <button class="btn" onclick="nextLevel()">➡️ Next Level</button>
                 </div>
@@ -1350,7 +1351,7 @@
             createGrid();
             updateStats();
             startTimer();
-            document.getElementById('completion-message').classList.remove('show');
+            // Completion message removed - no longer needed
             document.getElementById('previous-btn').disabled = currentLevel === 1;
         }
 
@@ -1499,8 +1500,8 @@
             
             if (revealedPieces.length === TOTAL_PIECES) {
                 setTimeout(() => {
-                    document.getElementById('completion-message').classList.add('show');
                     stopTimer();
+                    // Completion message removed - puzzle just completes silently
                 }, 500);
             }
         }
@@ -1522,6 +1523,34 @@
             revealPiece(piece, randomIndex);
         }
 
+        function revealFullImage() {
+            if (!imgData) {
+                alert('❌ No image data available for this level');
+                return;
+            }
+            
+            const confirmed = confirm('🔍 Are you sure you want to reveal the full image?\n\nThis will show the complete puzzle solution.');
+            
+            if (confirmed) {
+                // Reveal all remaining pieces
+                for (let i = 0; i < TOTAL_PIECES; i++) {
+                    if (!revealedPieces.includes(i)) {
+                        const piece = document.querySelector(`[data-index="${i}"]`);
+                        if (piece) {
+                            // Add a slight delay for visual effect
+                            setTimeout(() => {
+                                revealPiece(piece, i);
+                            }, i * 50); // Stagger the reveals
+                        }
+                    }
+                }
+                
+                // Count this as using multiple hints
+                hintsUsed += (TOTAL_PIECES - revealedPieces.length);
+                updateStats();
+            }
+        }
+
         function resetLevel() {
             revealedPieces = [];
             hintsUsed = 0;
@@ -1529,7 +1558,7 @@
             createGrid();
             updateStats();
             startTimer();
-            document.getElementById('completion-message').classList.remove('show');
+            // Completion message removed - no need to hide it
         }
 
         async function nextLevel() {
