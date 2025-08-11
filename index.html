@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Cosmic Jigsaw Quiz</title>
+    <title>Cosmic Quiz</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -53,8 +53,8 @@
             opacity: 0.6;
         }
 
-        /* Space debris animation */
-        .debris {
+        /* Enhanced Cosmic Background with Moving Debris */
+        .cosmic-background {
             position: fixed;
             top: 0;
             left: 0;
@@ -62,31 +62,326 @@
             height: 100%;
             pointer-events: none;
             z-index: -1;
+            overflow: hidden;
+        }
+
+        /* Cosmic Space Debris */
+        .debris {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
         }
 
         .debris span {
             position: absolute;
+            border-radius: 50%;
+            animation: cosmicFloat 15s linear infinite;
+            opacity: 0;
+        }
+
+        /* Different types of cosmic debris */
+        .debris span:nth-child(1n) {
             width: 3px;
             height: 3px;
-            background: rgba(255, 255, 255, 0.5);
-            border-radius: 50%;
-            box-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
-            animation: float 10s linear infinite;
-            opacity: 0.7;
+            background: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            animation-duration: 12s;
         }
 
         .debris span:nth-child(2n) {
             width: 2px;
             height: 2px;
-            animation-duration: 12s;
-            opacity: 0.5;
+            background: rgba(124, 58, 237, 0.7);
+            box-shadow: 0 0 8px rgba(124, 58, 237, 0.4);
+            animation-duration: 18s;
         }
 
         .debris span:nth-child(3n) {
             width: 4px;
             height: 4px;
-            animation-duration: 8s;
+            background: rgba(16, 185, 129, 0.6);
+            box-shadow: 0 0 12px rgba(16, 185, 129, 0.3);
+            animation-duration: 14s;
+        }
+
+        .debris span:nth-child(4n) {
+            width: 1px;
+            height: 1px;
+            background: rgba(59, 130, 246, 0.8);
+            box-shadow: 0 0 6px rgba(59, 130, 246, 0.5);
+            animation-duration: 20s;
+        }
+
+        .debris span:nth-child(5n) {
+            width: 5px;
+            height: 5px;
+            background: rgba(245, 158, 11, 0.5);
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.3);
+            animation-duration: 16s;
+        }
+
+        @keyframes cosmicFloat {
+            0% {
+                transform: translate(-100px, 100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translate(100vw, -100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .cosmic-dust {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(124, 58, 237, 0.1) 0%, transparent 70%);
+            animation: dustFloat 25s linear infinite;
+            opacity: 0;
+        }
+
+        .dust1 {
+            width: 100px;
+            height: 100px;
+            top: 20%;
+            left: -150px;
+            animation-delay: 0s;
+        }
+
+        .dust2 {
+            width: 80px;
+            height: 80px;
+            top: 60%;
+            left: -120px;
+            animation-delay: 8s;
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.08) 0%, transparent 70%);
+        }
+
+        .dust3 {
+            width: 120px;
+            height: 120px;
+            top: 40%;
+            left: -180px;
+            animation-delay: 16s;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.06) 0%, transparent 70%);
+        }
+
+        @keyframes dustFloat {
+            0% {
+                transform: translateX(-200px) scale(0.5);
+                opacity: 0;
+            }
+            20% {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
+            80% {
+                opacity: 1;
+                transform: translateX(80vw) scale(1.2);
+            }
+            100% {
+                transform: translateX(100vw) scale(0.8);
+                opacity: 0;
+            }
+        }
+
+        /* Spinning Earth */
+        .earth {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            right: 10%;
+            bottom: 15%;
+            border-radius: 50%;
+            background: 
+                radial-gradient(circle at 30% 30%, #4ade80 20%, #22c55e 40%, #16a34a 60%, #15803d 80%),
+                linear-gradient(45deg, #0ea5e9 0%, #0284c7 50%, #0369a1 100%);
+            box-shadow: 
+                0 0 30px rgba(34, 197, 94, 0.3),
+                inset -20px -20px 40px rgba(0, 0, 0, 0.3);
+            animation: earthSpin 20s linear infinite;
             opacity: 0.8;
+        }
+
+        .earth::before {
+            content: '';
+            position: absolute;
+            top: 20%;
+            left: 15%;
+            width: 25%;
+            height: 30%;
+            background: #16a34a;
+            border-radius: 50% 20% 40% 60%;
+            opacity: 0.8;
+        }
+
+        .earth::after {
+            content: '';
+            position: absolute;
+            top: 60%;
+            right: 25%;
+            width: 20%;
+            height: 25%;
+            background: #15803d;
+            border-radius: 40% 60% 30% 50%;
+            opacity: 0.9;
+        }
+
+        @keyframes earthSpin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Satellites */
+        .satellite {
+            position: absolute;
+            width: 12px;
+            height: 8px;
+            background: #94a3b8;
+            border-radius: 2px;
+            top: 25%;
+            right: 20%;
+            animation: satelliteOrbit 40s linear infinite;
+            transform-origin: 200px 200px;
+        }
+
+        .satellite::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -8px;
+            width: 6px;
+            height: 12px;
+            background: #64748b;
+            border-radius: 1px;
+        }
+
+        .satellite::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            right: -8px;
+            width: 6px;
+            height: 12px;
+            background: #64748b;
+            border-radius: 1px;
+        }
+
+        @keyframes satelliteOrbit {
+            0% { transform: rotate(0deg) translateX(200px) rotate(0deg); }
+            100% { transform: rotate(360deg) translateX(200px) rotate(-360deg); }
+        }
+
+        /* Shooting Stars */
+        .shooting-star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #e0e7ff;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #e0e7ff;
+        }
+
+        .shooting-star::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 100%;
+            width: 100px;
+            height: 1px;
+            background: linear-gradient(90deg, 
+                rgba(224, 231, 255, 0.8) 0%, 
+                rgba(224, 231, 255, 0.4) 50%, 
+                transparent 100%);
+        }
+
+        .star1 {
+            top: 20%;
+            right: 100%;
+            animation: shootingStar1 4s linear infinite;
+            animation-delay: 3s;
+        }
+
+        .star2 {
+            top: 60%;
+            right: 100%;
+            animation: shootingStar2 3.5s linear infinite;
+            animation-delay: 12s;
+        }
+
+        .star3 {
+            top: 40%;
+            right: 100%;
+            animation: shootingStar3 4.5s linear infinite;
+            animation-delay: 20s;
+        }
+
+        @keyframes shootingStar1 {
+            0% { transform: translate(0, 0); opacity: 0; }
+            5% { opacity: 1; }
+            95% { opacity: 1; }
+            100% { transform: translate(-100vw, 50vh); opacity: 0; }
+        }
+
+        @keyframes shootingStar2 {
+            0% { transform: translate(0, 0); opacity: 0; }
+            5% { opacity: 1; }
+            95% { opacity: 1; }
+            100% { transform: translate(-100vw, 30vh); opacity: 0; }
+        }
+
+        @keyframes shootingStar3 {
+            0% { transform: translate(0, 0); opacity: 0; }
+            5% { opacity: 1; }
+            95% { opacity: 1; }
+            100% { transform: translate(-100vw, 40vh); opacity: 0; }
+        }
+
+        /* Twinkling Stars */
+        .twinkling-stars {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .twinkling-stars .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            animation: twinkle 3s ease-in-out infinite;
+        }
+
+        .twinkling-stars .star:nth-child(2n) {
+            animation-duration: 4s;
+            animation-delay: 1s;
+        }
+
+        .twinkling-stars .star:nth-child(3n) {
+            animation-duration: 2.5s;
+            animation-delay: 2s;
+            background: rgba(124, 58, 237, 0.6);
+        }
+
+        .twinkling-stars .star:nth-child(4n) {
+            animation-duration: 3.5s;
+            animation-delay: 0.5s;
+            background: rgba(16, 185, 129, 0.5);
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.3); }
         }
 
         @keyframes float {
@@ -102,18 +397,18 @@
 
         .header {
             text-align: center;
-            margin-bottom: 32px;
+            margin-bottom: 24px;
         }
 
         h1 {
-            font-size: clamp(28px, 5vw, 36px);
+            font-size: clamp(20px, 3.5vw, 26px);
             font-weight: 700;
             background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
             text-shadow: 0 0 10px var(--glow);
-            margin-bottom: 12px;
+            margin-bottom: 8px;
         }
 
         .level-info {
@@ -236,12 +531,12 @@
             }
 
             h1 {
-                font-size: 48px;
-                margin-bottom: 16px;
+                font-size: 34px;
+                margin-bottom: 12px;
             }
 
             .header {
-                margin-bottom: 40px;
+                margin-bottom: 32px;
             }
         }
 
@@ -825,19 +1120,69 @@
     </style>
 </head>
 <body>
-    <div class="debris">
-        <span style="left: 10%; top: 20%; animation-delay: 0s;"></span>
-        <span style="left: 30%; top: 50%; animation-delay: 2s;"></span>
-        <span style="left: 50%; top: 10%; animation-delay: 4s;"></span>
-        <span style="left: 70%; top: 60%; animation-delay: 6s;"></span>
-        <span style="left: 20%; top: 80%; animation-delay: 8s;"></span>
-        <span style="left: 80%; top: 30%; animation-delay: 10s;"></span>
-        <span style="left: 40%; top: 40%; animation-delay: 12s;"></span>
-        <span style="left: 60%; top: 70%; animation-delay: 14s;"></span>
+    <!-- Enhanced Cosmic Background Animation System -->
+    <!-- Enhanced Cosmic Background with Moving Debris -->
+    <div class="cosmic-background">
+        <!-- Cosmic Space Debris -->
+        <div class="debris">
+            <span style="left: 5%; top: 15%; animation-delay: 0s;"></span>
+            <span style="left: 25%; top: 45%; animation-delay: 2s;"></span>
+            <span style="left: 45%; top: 8%; animation-delay: 4s;"></span>
+            <span style="left: 65%; top: 55%; animation-delay: 6s;"></span>
+            <span style="left: 15%; top: 75%; animation-delay: 8s;"></span>
+            <span style="left: 75%; top: 25%; animation-delay: 10s;"></span>
+            <span style="left: 35%; top: 35%; animation-delay: 12s;"></span>
+            <span style="left: 55%; top: 65%; animation-delay: 14s;"></span>
+            <span style="left: 85%; top: 45%; animation-delay: 16s;"></span>
+            <span style="left: 10%; top: 90%; animation-delay: 18s;"></span>
+            <span style="left: 90%; top: 10%; animation-delay: 20s;"></span>
+            <span style="left: 30%; top: 70%; animation-delay: 22s;"></span>
+            <span style="left: 60%; top: 30%; animation-delay: 24s;"></span>
+            <span style="left: 80%; top: 80%; animation-delay: 26s;"></span>
+            <span style="left: 20%; top: 50%; animation-delay: 28s;"></span>
+            <span style="left: 50%; top: 20%; animation-delay: 30s;"></span>
+            <span style="left: 70%; top: 5%; animation-delay: 32s;"></span>
+            <span style="left: 40%; top: 85%; animation-delay: 34s;"></span>
+        </div>
+
+        <!-- Cosmic Dust Clouds -->
+        <div class="cosmic-dust dust1"></div>
+        <div class="cosmic-dust dust2"></div>
+        <div class="cosmic-dust dust3"></div>
+
+        <!-- Spinning Earth -->
+        <div class="earth"></div>
+
+        <!-- Satellite -->
+        <div class="satellite"></div>
+
+        <!-- Shooting Stars -->
+        <div class="shooting-star star1"></div>
+        <div class="shooting-star star2"></div>
+        <div class="shooting-star star3"></div>
+
+        <!-- Twinkling Stars -->
+        <div class="twinkling-stars">
+            <div class="star" style="top: 10%; left: 15%;"></div>
+            <div class="star" style="top: 25%; left: 80%;"></div>
+            <div class="star" style="top: 40%; left: 10%;"></div>
+            <div class="star" style="top: 60%; left: 90%;"></div>
+            <div class="star" style="top: 80%; left: 20%;"></div>
+            <div class="star" style="top: 15%; left: 50%;"></div>
+            <div class="star" style="top: 70%; left: 60%;"></div>
+            <div class="star" style="top: 35%; left: 75%;"></div>
+            <div class="star" style="top: 85%; left: 45%;"></div>
+            <div class="star" style="top: 50%; left: 25%;"></div>
+            <div class="star" style="top: 20%; left: 95%;"></div>
+            <div class="star" style="top: 90%; left: 5%;"></div>
+            <div class="star" style="top: 5%; left: 70%;"></div>
+            <div class="star" style="top: 75%; left: 85%;"></div>
+            <div class="star" style="top: 45%; left: 40%;"></div>
+        </div>
     </div>
 
     <div class="header">
-        <h1>🌌 Cosmic Jigsaw Quiz</h1>
+        <h1>🌌 Cosmic Quiz</h1>
         <div class="level-info">
             <div class="level-text" id="level-text">Star System 1</div>
             <div class="progress" id="progress-text">0 / 0 sectors explored</div>
@@ -857,10 +1202,10 @@
 
             <div class="controls-section">
                 <div class="controls">
-                    <button class="btn" id="previous-btn" onclick="previousLevel()">⬅️ Previous Star System</button>
-                    <button class="btn" onclick="revealHint()">🔍 Scan Sector</button>
-                    <button class="btn secondary" onclick="resetLevel()">🔄 Recalibrate</button>
-                    <button class="btn" onclick="nextLevel()">➡️ Next Star System</button>
+                    <button class="btn" id="previous-btn" onclick="previousLevel()">⬅️ Previous Level</button>
+                    <button class="btn" onclick="revealHint()">💡 Hint</button>
+                    <button class="btn secondary" onclick="resetLevel()">🔄 Reset</button>
+                    <button class="btn" onclick="nextLevel()">➡️ Next Level</button>
                 </div>
 
                 <div class="stats">
@@ -883,8 +1228,8 @@
 
     <script>
         // Global variables for grid dimensions
-        const GRID_WIDTH = 4; // Number of columns
-        const GRID_HEIGHT = 4; // Number of rows
+        const GRID_WIDTH = 5; // Number of columns
+        const GRID_HEIGHT = 5; // Number of rows
         const TOTAL_PIECES = GRID_WIDTH * GRID_HEIGHT;
 
         // Set grid aspect ratio in CSS
