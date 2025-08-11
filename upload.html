@@ -513,26 +513,151 @@
     </div>
 
     <script>
-        function initializeAdmin() {
-            generateUploadCards();
+        // IndexedDB Database Management
+        let db = null;
+        const DB_NAME = 'CosmicQuizDB';
+        const DB_VERSION = 1;
+        const STORE_NAME = 'images';
+
+        // Initialize IndexedDB
+        function initDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+                
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => {
+                    db = request.result;
+                    resolve(db);
+                };
+                
+                request.onupgradeneeded = (event) => {
+                    const database = event.target.result;
+                    if (!database.objectStoreNames.contains(STORE_NAME)) {
+                        database.createObjectStore(STORE_NAME, { keyPath: 'level' });
+                    }
+                };
+            });
         }
 
-        function generateUploadCards() {
+        // Store image in IndexedDB
+        function storeImage(level, imageData) {
+            return new Promise((resolve, reject) => {
+                if (!db) {
+                    reject(new Error('Database not initialized'));
+                    return;
+                }
+                
+                const transaction = db.transaction([STORE_NAME], 'readwrite');
+                const store = transaction.objectStore(STORE_NAME);
+                const request = store.put({ level: level, data: imageData });
+                
+                request.onsuccess = () => resolve();
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        // Get image from IndexedDB
+        function getImage(level) {
+            return new Promise((resolve, reject) => {
+                if (!db) {
+                    reject(new Error('Database not initialized'));
+                    return;
+                }
+                
+                const transaction = db.transaction([STORE_NAME], 'readonly');
+                const store = transaction.objectStore(STORE_NAME);
+                const request = store.get(level);
+                
+                request.onsuccess = () => {
+                    const result = request.result;
+                    resolve(result ? result.data : null);
+                };
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        // Delete image from IndexedDB
+        function deleteImage(level) {
+            return new Promise((resolve, reject) => {
+                if (!db) {
+                    reject(new Error('Database not initialized'));
+                    return;
+                }
+                
+                const transaction = db.transaction([STORE_NAME], 'readwrite');
+                const store = transaction.objectStore(STORE_NAME);
+                const request = store.delete(level);
+                
+                request.onsuccess = () => resolve();
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        // Get all images count
+        function getAllImagesCount() {
+            return new Promise((resolve, reject) => {
+                if (!db) {
+                    reject(new Error('Database not initialized'));
+                    return;
+                }
+                
+                const transaction = db.transaction([STORE_NAME], 'readonly');
+                const store = transaction.objectStore(STORE_NAME);
+                const request = store.count();
+                
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        // Clear all images
+        function clearAllImages() {
+            return new Promise((resolve, reject) => {
+                if (!db) {
+                    reject(new Error('Database not initialized'));
+                    return;
+                }
+                
+                const transaction = db.transaction([STORE_NAME], 'readwrite');
+                const store = transaction.objectStore(STORE_NAME);
+                const request = store.clear();
+                
+                request.onsuccess = () => resolve();
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        async function initializeAdmin() {
+            try {
+                await initDB();
+                await generateUploadCards();
+            } catch (error) {
+                console.error('Failed to initialize admin:', error);
+                showNotification('Failed to initialize image storage. Please refresh the page.', 'error');
+            }
+        }
+
+        async function generateUploadCards() {
             const grid = document.getElementById('uploads-grid');
             grid.innerHTML = '';
             
             for (let i = 1; i <= 5; i++) {
-                const hasImage = localStorage.getItem('level' + i) !== null;
-                const card = createUploadCard(i, hasImage);
-                grid.appendChild(card);
+                try {
+                    const imageData = await getImage(`level${i}`);
+                    const hasImage = imageData !== null;
+                    const card = await createUploadCard(i, hasImage, imageData);
+                    grid.appendChild(card);
+                } catch (error) {
+                    console.error(`Error loading level ${i}:`, error);
+                    const card = await createUploadCard(i, false, null);
+                    grid.appendChild(card);
+                }
             }
         }
 
-        function createUploadCard(level, hasImage) {
+        async function createUploadCard(level, hasImage, existingImage) {
             const card = document.createElement('div');
             card.className = `upload-card ${hasImage ? 'has-image' : ''}`;
-            
-            const existingImage = localStorage.getItem('level' + level);
             
             card.innerHTML = 
                 `<div class="level-header">
@@ -548,7 +673,7 @@
                         ${hasImage ? 'Click to Replace Image' : 'Click to Upload Image'}
                     </div>
                     <div class="upload-hint">
-                        Supports: JPG, PNG, GIF, WebP (Max: 5MB)
+                        Supports: JPG, PNG, GIF, WebP (Up to 50MB with IndexedDB!)
                     </div>
                 </div>
                 ${hasImage ? `
@@ -601,10 +726,10 @@
             return card;
         }
 
-        function handleImageFile(file, level) {
-            // Validate file size (5MB limit)
-            if (file.size > 5 * 1024 * 1024) {
-                showNotification('File size too large! Please use images under 5MB.', 'error');
+        async function handleImageFile(file, level) {
+            // Validate file size (increased to 50MB limit with IndexedDB)
+            if (file.size > 50 * 1024 * 1024) {
+                showNotification('File size too large! Please use images under 50MB.', 'error');
                 return;
             }
 
@@ -618,10 +743,15 @@
             showNotification(`Uploading Level ${level} image...`);
 
             const reader = new FileReader();
-            reader.onload = function(e) {
-                localStorage.setItem('level' + level, e.target.result);
-                showNotification(`Level ${level} image uploaded successfully!`);
-                generateUploadCards();
+            reader.onload = async function(e) {
+                try {
+                    await storeImage(`level${level}`, e.target.result);
+                    showNotification(`Level ${level} image uploaded successfully!`);
+                    await generateUploadCards();
+                } catch (error) {
+                    console.error('Error storing image:', error);
+                    showNotification('Error storing image. Please try again.', 'error');
+                }
             };
             reader.onerror = function() {
                 showNotification('Error reading the image file. Please try again.', 'error');
@@ -629,46 +759,61 @@
             reader.readAsDataURL(file);
         }
 
-        function removeImage(level) {
+        async function removeImage(level) {
             if (confirm(`Are you sure you want to remove the image for Level ${level}?`)) {
-                localStorage.removeItem('level' + level);
-                showNotification(`Level ${level} image removed.`);
-                generateUploadCards();
-            }
-        }
-
-        function previewFullSize(level) {
-            const imageData = localStorage.getItem('level' + level);
-            if (imageData) {
-                const newWindow = window.open('', '_blank');
-                newWindow.document.write(`
-                    <html>
-                        <head><title>Level ${level} - Full Size Preview</title></head>
-                        <body style="margin:0;background:#0a0e1a;display:flex;align-items:center;justify-content:center;min-height:100vh;">
-                            <img src="${imageData}" style="max-width:100%;max-height:100%;object-fit:contain;">
-                        </body>
-                    </html>
-                `);
-            }
-        }
-
-        function saveAllImages() {
-            let uploadedCount = 0;
-            for (let i = 1; i <= 5; i++) {
-                if (localStorage.getItem('level' + i)) {
-                    uploadedCount++;
+                try {
+                    await deleteImage(`level${level}`);
+                    showNotification(`Level ${level} image removed.`);
+                    await generateUploadCards();
+                } catch (error) {
+                    console.error('Error removing image:', error);
+                    showNotification('Error removing image. Please try again.', 'error');
                 }
             }
-            showNotification(`All changes saved! ${uploadedCount} levels ready for play.`);
         }
 
-        function clearAllData() {
+        async function previewFullSize(level) {
+            try {
+                const imageData = await getImage(`level${level}`);
+                if (imageData) {
+                    const newWindow = window.open('', '_blank');
+                    newWindow.document.write(`
+                        <html>
+                            <head><title>Level ${level} - Full Size Preview</title></head>
+                            <body style="margin:0;background:#0a0e1a;display:flex;align-items:center;justify-content:center;min-height:100vh;">
+                                <img src="${imageData}" style="max-width:100%;max-height:100%;object-fit:contain;">
+                            </body>
+                        </html>
+                    `);
+                } else {
+                    showNotification('Image not found.', 'error');
+                }
+            } catch (error) {
+                console.error('Error loading image:', error);
+                showNotification('Error loading image preview.', 'error');
+            }
+        }
+
+        async function saveAllImages() {
+            try {
+                const count = await getAllImagesCount();
+                showNotification(`All changes saved! ${count} levels ready for play.`);
+            } catch (error) {
+                console.error('Error getting image count:', error);
+                showNotification('Images saved successfully!');
+            }
+        }
+
+        async function clearAllData() {
             if (confirm('⚠️ This will permanently delete ALL puzzle images. Are you sure?')) {
-                for (let i = 1; i <= 5; i++) {
-                    localStorage.removeItem('level' + i);
+                try {
+                    await clearAllImages();
+                    await generateUploadCards();
+                    showNotification('All data cleared successfully!');
+                } catch (error) {
+                    console.error('Error clearing data:', error);
+                    showNotification('Error clearing data. Please try again.', 'error');
                 }
-                generateUploadCards();
-                showNotification('All data cleared successfully!');
             }
         }
 
@@ -685,7 +830,7 @@
             }, 3000);
         }
 
-        // Initialize the admin panel
+        // Initialize the admin panel with IndexedDB
         initializeAdmin();
     </script>
 </body>
