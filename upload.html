@@ -541,11 +541,11 @@
                         ${hasImage ? '✅ Uploaded' : '⭕ Empty'}
                     </div>
                 </div>
-                <div class="upload-area" onclick="document.getElementById('file-${level}').click()">
-                    <input type="file" id="file-${level}" accept="image/*" onchange="handleImageUpload(event, ${level})">
+                <div class="upload-area" id="upload-area-${level}">
+                    <input type="file" id="file-${level}" accept="image/*" style="display: none;">
                     <div class="upload-icon">${hasImage ? '🖼️' : '📁'}</div>
                     <div class="upload-text">
-                        ${hasImage ? 'Replace Image' : 'Upload Image'}
+                        ${hasImage ? 'Click to Replace Image' : 'Click to Upload Image'}
                     </div>
                     <div class="upload-hint">
                         Supports: JPG, PNG, GIF, WebP (Max: 5MB)
@@ -565,8 +565,21 @@
                     </div>
                 ` : ''}`;
             
-            // Add drag and drop functionality
+            // Add click functionality for upload
             const uploadArea = card.querySelector('.upload-area');
+            const fileInput = card.querySelector(`#file-${level}`);
+            
+            uploadArea.addEventListener('click', () => {
+                fileInput.click();
+            });
+            
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files[0]) {
+                    handleImageFile(e.target.files[0], level);
+                }
+            });
+            
+            // Add drag and drop functionality
             uploadArea.addEventListener('dragover', (e) => {
                 e.preventDefault();
                 uploadArea.classList.add('dragover');
@@ -588,13 +601,6 @@
             return card;
         }
 
-        function handleImageUpload(event, level) {
-            const file = event.target.files[0];
-            if (file) {
-                handleImageFile(file, level);
-            }
-        }
-
         function handleImageFile(file, level) {
             // Validate file size (5MB limit)
             if (file.size > 5 * 1024 * 1024) {
@@ -608,13 +614,20 @@
                 return;
             }
 
+            // Show loading state
+            showNotification(`Uploading Level ${level} image...`);
+
             const reader = new FileReader();
             reader.onload = function(e) {
                 localStorage.setItem('level' + level, e.target.result);
                 showNotification(`Level ${level} image uploaded successfully!`);
                 generateUploadCards();
             };
+            reader.onerror = function() {
+                showNotification('Error reading the image file. Please try again.', 'error');
+            };
             reader.readAsDataURL(file);
+        }
         }
 
         function removeImage(level) {
