@@ -1,0 +1,1881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cosmic Quiz</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Dark Theme Variables */
+            --bg: #0a0e1a; /* Deep cosmic navy */
+            --card: #121726; /* Dark panel background */
+            --text: #e0e6ff; /* Starlight off-white */
+            --accent: #7c3aed; /* Nebula purple */
+            --accent-secondary: #10b981; /* Cosmic emerald */
+            --shadow: rgba(0, 0, 0, 0.7); /* Black hole shadow */
+            --glow: rgba(124, 58, 237, 0.2); /* Nebula glow */
+            font-family: 'Inter', sans-serif;
+        }
+
+        [data-theme="light"] {
+            /* Light Theme Variables */
+            --bg: #e6f0ff; /* Cosmic light blue */
+            --card: #f8fafc; /* Light panel background */
+            --text: #1e293b; /* Dark slate for readability */
+            --accent: #6d28d9; /* Vibrant cosmic purple */
+            --accent-secondary: #059669; /* Bright cosmic emerald */
+            --shadow: rgba(0, 0, 0, 0.15); /* Softer shadow for light theme */
+            --glow: rgba(109, 40, 217, 0.3); /* Light nebula glow */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: 
+                radial-gradient(circle at 20% 20%, var(--glow), transparent 30%),
+                radial-gradient(circle at 80% 80%, rgba(16, 185, 129, 0.1), transparent 25%),
+                linear-gradient(135deg, var(--bg) 0%, #1a2238 50%, var(--bg) 100%);
+            color: var(--text);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            padding: 24px;
+            position: relative;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+
+        [data-theme="light"] body {
+            background: 
+                radial-gradient(circle at 20% 20%, var(--glow), transparent 30%),
+                radial-gradient(circle at 80% 80%, rgba(5, 150, 105, 0.15), transparent 25%),
+                linear-gradient(135deg, var(--bg) 0%, #dbeafe 50%, var(--bg) 100%);
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                linear-gradient(45deg, transparent, var(--glow), transparent),
+                url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><circle cx="50" cy="50" r="1" fill="rgba(255,255,255,0.3)"/></svg>') repeat;
+            background-size: 100px 100px;
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0.6;
+        }
+
+        [data-theme="light"] body::before {
+            background: 
+                linear-gradient(45deg, transparent, var(--glow), transparent),
+                url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><circle cx="50" cy="50" r="1" fill="rgba(0,0,0,0.2)"/></svg>') repeat;
+            opacity: 0.4;
+        }
+
+        /* Enhanced Cosmic Background with Moving Debris */
+        .cosmic-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        /* Cosmic Space Debris */
+        .debris {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .debris span {
+            position: absolute;
+            border-radius: 50%;
+            animation: cosmicFloat 15s linear infinite;
+            opacity: 0;
+        }
+
+        .debris span:nth-child(1n) {
+            width: 3px;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            animation-duration: 12s;
+        }
+
+        .debris span:nth-child(2n) {
+            width: 2px;
+            height: 2px;
+            background: rgba(124, 58, 237, 0.7);
+            box-shadow: 0 0 8px rgba(124, 58, 237, 0.4);
+            animation-duration: 18s;
+        }
+
+        .debris span:nth-child(3n) {
+            width: 4px;
+            height: 4px;
+            background: rgba(16, 185, 129, 0.6);
+            box-shadow: 0 0 12px rgba(16, 185, 129, 0.3);
+            animation-duration: 14s;
+        }
+
+        .debris span:nth-child(4n) {
+            width: 1px;
+            height: 1px;
+            background: rgba(59, 130, 246, 0.8);
+            box-shadow: 0 0 6px rgba(59, 130, 246, 0.5);
+            animation-duration: 20s;
+        }
+
+        .debris span:nth-child(5n) {
+            width: 5px;
+            height: 5px;
+            background: rgba(245, 158, 11, 0.5);
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.3);
+            animation-duration: 16s;
+        }
+
+        [data-theme="light"] .debris span:nth-child(1n) {
+            background: rgba(0, 0, 0, 0.6);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        }
+
+        [data-theme="light"] .debris span:nth-child(2n) {
+            background: rgba(109, 40, 217, 0.6);
+            box-shadow: 0 0 8px rgba(109, 40, 217, 0.3);
+        }
+
+        [data-theme="light"] .debris span:nth-child(3n) {
+            background: rgba(5, 150, 105, 0.5);
+            box-shadow: 0 0 12px rgba(5, 150, 105, 0.3);
+        }
+
+        [data-theme="light"] .debris span:nth-child(4n) {
+            background: rgba(29, 78, 216, 0.6);
+            box-shadow: 0 0 6px rgba(29, 78, 216, 0.3);
+        }
+
+        [data-theme="light"] .debris span:nth-child(5n) {
+            background: rgba(217, 119, 6, 0.5);
+            box-shadow: 0 0 15px rgba(217, 119, 6, 0.3);
+        }
+
+        @keyframes cosmicFloat {
+            0% {
+                transform: translate(-100px, 100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translate(100vw, -100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .cosmic-dust {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(124, 58, 237, 0.1) 0%, transparent 70%);
+            animation: dustFloat 25s linear infinite;
+            opacity: 0;
+        }
+
+        .dust1 {
+            width: 100px;
+            height: 100px;
+            top: 20%;
+            left: -150px;
+            animation-delay: 0s;
+        }
+
+        .dust2 {
+            width: 80px;
+            height: 80px;
+            top: 60%;
+            left: -120px;
+            animation-delay: 8s;
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.08) 0%, transparent 70%);
+        }
+
+        .dust3 {
+            width: 120px;
+            height: 120px;
+            top: 40%;
+            left: -180px;
+            animation-delay: 16s;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.06) 0%, transparent 70%);
+        }
+
+        [data-theme="light"] .cosmic-dust.dust1 {
+            background: radial-gradient(circle, rgba(109, 40, 217, 0.15) 0%, transparent 70%);
+        }
+
+        [data-theme="light"] .cosmic-dust.dust2 {
+            background: radial-gradient(circle, rgba(5, 150, 105, 0.12) 0%, transparent 70%);
+        }
+
+        [data-theme="light"] .cosmic-dust.dust3 {
+            background: radial-gradient(circle, rgba(29, 78, 216, 0.1) 0%, transparent 70%);
+        }
+
+        @keyframes dustFloat {
+            0% {
+                transform: translateX(-200px) scale(0.5);
+                opacity: 0;
+            }
+            20% {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
+            80% {
+                opacity: 1;
+                transform: translateX(80vw) scale(1.2);
+            }
+            100% {
+                transform: translateX(100vw) scale(0.8);
+                opacity: 0;
+            }
+        }
+
+        .earth {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            right: 10%;
+            bottom: 15%;
+            border-radius: 50%;
+            background: 
+                radial-gradient(circle at 30% 30%, #4ade80 20%, #22c55e 40%, #16a34a 60%, #15803d 80%),
+                linear-gradient(45deg, #0ea5e9 0%, #0284c7 50%, #0369a1 100%);
+            box-shadow: 
+                0 0 30px rgba(34, 197, 94, 0.3),
+                inset -20px -20px 40px rgba(0, 0, 0, 0.3);
+            animation: earthSpin 20s linear infinite;
+            opacity: 0.8;
+        }
+
+        [data-theme="light"] .earth {
+            background: 
+                radial-gradient(circle at 30% 30%, #6ee7b7 20%, #34d399 40%, #059669 60%, #047857 80%),
+                linear-gradient(45deg, #60a5fa 0%, #3b82f6 50%, #2563eb 100%);
+            box-shadow: 
+                0 0 30px rgba(34, 197, 94, 0.2),
+                inset -20px -20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .earth::before {
+            content: '';
+            position: absolute;
+            top: 20%;
+            left: 15%;
+            width: 25%;
+            height: 30%;
+            background: #16a34a;
+            border-radius: 50% 20% 40% 60%;
+            opacity: 0.8;
+        }
+
+        [data-theme="light"] .earth::before {
+            background: #059669;
+        }
+
+        .earth::after {
+            content: '';
+            position: absolute;
+            top: 60%;
+            right: 25%;
+            width: 20%;
+            height: 25%;
+            background: #15803d;
+            border-radius: 40% 60% 30% 50%;
+            opacity: 0.9;
+        }
+
+        [data-theme="light"] .earth::after {
+            background: #047857;
+        }
+
+        @keyframes earthSpin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .satellite {
+            position: absolute;
+            width: 12px;
+            height: 8px;
+            background: #94a3b8;
+            border-radius: 2px;
+            top: 25%;
+            right: 20%;
+            animation: satelliteOrbit 40s linear infinite;
+            transform-origin: 200px 200px;
+        }
+
+        [data-theme="light"] .satellite {
+            background: #64748b;
+        }
+
+        .satellite::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -8px;
+            width: 6px;
+            height: 12px;
+            background: #64748b;
+            border-radius: 1px;
+        }
+
+        .satellite::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            right: -8px;
+            width: 6px;
+            height: 12px;
+            background: #64748b;
+            border-radius: 1px;
+        }
+
+        [data-theme="light"] .satellite::before,
+        [data-theme="light"] .satellite::after {
+            background: #475569;
+        }
+
+        @keyframes satelliteOrbit {
+            0% { transform: rotate(0deg) translateX(200px) rotate(0deg); }
+            100% { transform: rotate(360deg) translateX(200px) rotate(-360deg); }
+        }
+
+        .shooting-star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #e0e7ff;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #e0e7ff;
+        }
+
+        [data-theme="light"] .shooting-star {
+            background: #1e293b;
+            box-shadow: 0 0 10px #1e293b;
+        }
+
+        .shooting-star::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 100%;
+            width: 100px;
+            height: 1px;
+            background: linear-gradient(90deg, 
+                rgba(224, 231, 255, 0.8) 0%, 
+                rgba(224, 231, 255, 0.4) 50%, 
+                transparent 100%);
+        }
+
+        [data-theme="light"] .shooting-star::before {
+            background: linear-gradient(90deg, 
+                rgba(30, 41, 59, 0.8) 0%, 
+                rgba(30, 41, 59, 0.4) 50%, 
+                transparent 100%);
+        }
+
+        .star1 {
+            top: 20%;
+            right: 100%;
+            animation: shootingStar1 4s linear infinite;
+            animation-delay: 3s;
+        }
+
+        .star2 {
+            top: 60%;
+            right: 100%;
+            animation: shootingStar2 3.5s linear infinite;
+            animation-delay: 12s;
+        }
+
+        .star3 {
+            top: 40%;
+            right: 100%;
+            animation: shootingStar3 4.5s linear infinite;
+            animation-delay: 20s;
+        }
+
+        @keyframes shootingStar1 {
+            0% { transform: translate(0, 0); opacity: 0; }
+            5% { opacity: 1; }
+            95% { opacity: 1; }
+            100% { transform: translate(-100vw, 50vh); opacity: 0; }
+        }
+
+        @keyframes shootingStar2 {
+            0% { transform: translate(0, 0); opacity: 0; }
+            5% { opacity: 1; }
+            95% { opacity: 1; }
+            100% { transform: translate(-100vw, 30vh); opacity: 0; }
+        }
+
+        @keyframes shootingStar3 {
+            0% { transform: translate(0, 0); opacity: 0; }
+            5% { opacity: 1; }
+            95% { opacity: 1; }
+            100% { transform: translate(-100vw, 40vh); opacity: 0; }
+        }
+
+        .twinkling-stars {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .twinkling-stars .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            animation: twinkle 3s ease-in-out infinite;
+        }
+
+        [data-theme="light"] .twinkling-stars .star {
+            background: rgba(0, 0, 0, 0.7);
+        }
+
+        .twinkling-stars .star:nth-child(2n) {
+            animation-duration: 4s;
+            animation-delay: 1s;
+        }
+
+        .twinkling-stars .star:nth-child(3n) {
+            animation-duration: 2.5s;
+            animation-delay: 2s;
+            background: rgba(124, 58, 237, 0.6);
+        }
+
+        [data-theme="light"] .twinkling-stars .star:nth-child(3n) {
+            background: rgba(109, 40, 217, 0.5);
+        }
+
+        .twinkling-stars .star:nth-child(4n) {
+            animation-duration: 3.5s;
+            animation-delay: 0.5s;
+            background: rgba(16, 185, 129, 0.5);
+        }
+
+        [data-theme="light"] .twinkling-stars .star:nth-child(4n) {
+            background: rgba(5, 150, 105, 0.4);
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.3); }
+        }
+
+        @keyframes float {
+            0% {
+                transform: translate(0, 0);
+                opacity: 0.7;
+            }
+            100% {
+                transform: translate(100vw, 100vh);
+                opacity: 0;
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        h1 {
+            font-size: clamp(20px, 3.5vw, 26px);
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 10px var(--glow);
+            margin-bottom: 8px;
+        }
+
+        .level-info {
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.05) 0%, 
+                rgba(18, 23, 38, 0.9) 100%
+            );
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 12px;
+            padding: 20px 32px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 
+                0 8px 24px var(--shadow),
+                inset 0 1px 1px rgba(255, 255, 255, 0.05);
+            margin-bottom: 24px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        [data-theme="light"] .level-info {
+            background: linear-gradient(135deg, 
+                rgba(0, 0, 0, 0.05) 0%, 
+                rgba(248, 250, 252, 0.9) 100%
+            );
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .level-info:hover {
+            box-shadow: 
+                0 12px 32px var(--shadow),
+                0 0 20px var(--glow);
+            transform: translateY(-2px);
+        }
+
+        .level-info::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, 
+                transparent, 
+                var(--accent), 
+                transparent
+            );
+        }
+
+        .level-text {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--accent);
+            margin-bottom: 8px;
+        }
+
+        .progress {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        [data-theme="light"] .progress {
+            color: rgba(0, 0, 0, 0.6);
+        }
+
+        .game-container {
+            max-width: 900px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        @media (min-width: 1024px) {
+            .game-container {
+                max-width: 1100px;
+                padding: 20px;
+            }
+
+            .main-layout {
+                display: grid;
+                grid-template-columns: 1fr 320px;
+                gap: 40px;
+                align-items: start;
+            }
+
+            .game-section {
+                grid-column: 1;
+            }
+
+            .controls-section {
+                grid-column: 2;
+                position: sticky;
+                top: 20px;
+            }
+
+            .controls {
+                flex-direction: column;
+                gap: 12px;
+                margin: 0;
+            }
+
+            .btn {
+                width: 100%;
+                padding: 14px 28px;
+                font-size: 16px;
+                border-radius: 12px;
+            }
+
+            .stats {
+                flex-direction: column;
+                gap: 12px;
+                margin: 24px 0 0 0;
+            }
+
+            .stat-item {
+                width: 100%;
+                padding: 18px 24px;
+            }
+
+            .level-info {
+                padding: 24px 40px;
+                margin-bottom: 32px;
+            }
+
+            .level-text {
+                font-size: 24px;
+            }
+
+            .progress {
+                font-size: 16px;
+            }
+
+            h1 {
+                font-size: 34px;
+                margin-bottom: 12px;
+            }
+
+            .header {
+                margin-bottom: 32px;
+            }
+        }
+
+        #grid {
+            display: grid;
+            gap: 3px;
+            aspect-ratio: var(--grid-aspect);
+            margin: 24px auto;
+            background: linear-gradient(135deg, 
+                rgba(18, 23, 38, 0.8) 0%, 
+                rgba(12, 16, 28, 0.9) 100%
+            );
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: 16px;
+            padding: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 
+                0  Eurasians 16px 48px var(--shadow),
+                inset 0 1px 1px rgba(255, 255, 255, 0.05);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        [data-theme="light"] #grid {
+            background: linear-gradient(135deg, 
+                rgba(248, 250, 252, 0.8) 0%, 
+                rgba(229, 231, 235, 0.9) 100%
+            );
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        @media (min-width: 1024px) {
+            #grid {
+                gap: 4px;
+                padding: 18px;
+                margin: 32px 0;
+            }
+
+            #grid:hover {
+                box-shadow: 
+                    0 20px 60px var(--shadow),
+                    0 0 24px var(--glow),
+                    inset 0 1px 1px rgba(255, 255, 255, 0.08);
+                transform: translateY(-2px);
+            }
+
+            [data-theme="light"] #grid:hover {
+                box-shadow: 
+                    0 20px 60px var(--shadow),
+                    0 0 24px var(--glow),
+                    inset 0 1px 1px rgba(0, 0, 0, 0.08);
+            }
+        }
+
+        #grid::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 50% 50%, var(--glow), transparent 50%);
+            border-radius: 16px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        #grid > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .puzzle-piece {
+            aspect-ratio: 1;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.05) 0%, 
+                rgba(18, 23, 38, 0.9) 100%
+            );
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 
+                0 4px 12px var(--shadow),
+                inset 0 1px 1px rgba(255, 255, 255, 0.05);
+            animation: pulse 3s ease-in-out infinite;
+        }
+
+        [data-theme="light"] .puzzle-piece {
+            background: linear-gradient(135deg, 
+                rgba(0, 0, 0, 0.05) 0%, 
+                rgba(248, 250, 252, 0.9) 100%
+            );
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        @media (min-width: 1024px) {
+            .puzzle-piece {
+                border-radius: 12px;
+                transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+
+            .puzzle-piece:hover {
+                transform: scale(1.08) translateY(-4px) rotateY(5deg);
+                box-shadow: 
+                    0 16px 32px var(--shadow),
+                    0 0 20px var(--glow);
+                border-color: var(--accent);
+                background: linear-gradient(135deg, 
+                    rgba(124, 58, 237, 0.2) 0%, 
+                    rgba(18, 23, 38, 0.9) 100%
+                );
+            }
+
+            [data-theme="light"] .puzzle-piece:hover {
+                background: linear-gradient(135deg, 
+                    rgba(109, 40, 217, 0.2) 0%, 
+                    rgba(248, 250, 252, 0.9) 100%
+                );
+            }
+
+            .puzzle-piece:active {
+                transform: scale(1.02) translateY(-1px);
+                transition: all 0.1s ease;
+            }
+
+            .puzzle-piece:focus {
+                outline: 2px solid var(--accent);
+                outline-offset: 2px;
+                transform: scale(1.05);
+                box-shadow: 
+                    0 12px 24px var(--shadow),
+                    0 0 16px var(--glow);
+            }
+
+            .completion-message {
+                max-width: 800px;
+                padding: 32px 40px;
+                border-radius: 16px;
+            }
+
+            .completion-message h3 {
+                font-size: 32px;
+            }
+
+            .completion-message p {
+                font-size: 18px;
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 
+                    0 4px 12px var(--shadow),
+                    0 0 8px var(--glow);
+            }
+            50% {
+                box-shadow: 
+                    0 4px 12px var(--shadow),
+                    0 0 12px var(--glow);
+            }
+        }
+
+        .puzzle-piece:hover {
+            transform: scale(1.05) translateY(-3px);
+            box-shadow: 
+                0 12px 24px var(--shadow),
+                0 0 16px var(--glow);
+            border-color: var(--accent);
+            background: linear-gradient(135deg, 
+                rgba(124, 58, 237, 0.15) 0%, 
+                rgba(18, 23, 38, 0.9) 100%
+            );
+        }
+
+        [data-theme="light"] .puzzle-piece:hover {
+            background: linear-gradient(135deg, 
+                rgba(109, 40, 217, 0.15) 0%, 
+                rgba(248, 250, 252, 0.9) 100%
+            );
+        }
+
+        .puzzle-piece.revealed {
+            background: linear-gradient(135deg, 
+                rgba(124, 58, 237, 0.2) 0%, 
+                rgba(16, 185, 129, 0.15) 100%
+            );
+            border-color: var(--accent);
+            box-shadow: 
+                0 8px 20px var(--shadow),
+                0 0 12px var(--glow);
+            animation: none;
+        }
+
+        [data-theme="light"] .puzzle-piece.revealed {
+            background: linear-gradient(135deg, 
+                rgba(109, 40, 217, 0.2) 0%, 
+                rgba(5, 150, 105, 0.15) 100%
+            );
+        }
+
+        .puzzle-piece.revealed:hover {
+            transform: scale(1.03) translateY(-2px);
+            box-shadow: 
+                0 12px 28px var(--shadow),
+                0 0 16px var(--glow);
+        }
+
+        .piece-number {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: clamp(14px, 2.5vw, 18px);
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 8px var(--glow);
+            z-index: 10;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none;
+        }
+
+        @media (min-width: 1024px) {
+            .piece-number {
+                font-size: 20px;
+                font-weight: 700;
+            }
+        }
+
+        .piece-number.fade-out {
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(1.4) rotate(10deg);
+            text-shadow: 0 0 12px var(--glow);
+        }
+
+        .puzzle-piece svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .hidden-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, 
+                rgba(10, 14, 26, 0.95) 0%, 
+                rgba(18, 23, 38, 0.9) 100%
+            );
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.05);
+        }
+
+        [data-theme="light"] .hidden-overlay {
+            background: linear-gradient(135deg, 
+                rgba(229, 231, 235, 0.95) 0%, 
+                rgba(248, 250, 252, 0.9) 100%
+            );
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .hidden-overlay.revealing {
+            opacity: 0;
+            transform: scale(0.9) rotate(3deg);
+            backdrop-filter: blur(0px);
+            -webkit-backdrop-filter: blur(0px);
+        }
+
+        .controls {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 32px auto;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, 
+                var(--accent) 0%, 
+                var(--accent-secondary) 100%
+            );
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            color: var(--text);
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: 'Inter', sans-serif;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 
+                0 4px 12px var(--shadow),
+                inset 0 1px 1px rgba(255, 255, 255, 0.1);
+            user-select: none;
+        }
+
+        @media (min-width: 1024px) {
+            .btn {
+                font-size: 16px;
+                padding: 14px 28px;
+            }
+
+            .btn:focus {
+                outline: 2px solid var(--accent-secondary);
+                outline-offset: 2px;
+            }
+
+            .btn:focus:not(:hover) {
+                transform: translateY(-1px);
+                box-shadow: 
+                    0 6px 16px var(--shadow),
+                    0 0 8px var(--glow);
+            }
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, 
+                transparent, 
+                rgba(255, 255, 255, 0.15), 
+                transparent
+            );
+            transition: left 0.4s ease;
+        }
+
+        [data-theme="light"] .btn::before {
+            background: linear-gradient(90deg, 
+                transparent, 
+                rgba(0, 0, 0, 0.1), 
+                transparent
+            );
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                0 8px 20px var(--shadow),
+                0 0 12px var(--glow);
+            background: linear-gradient(135deg, 
+                var(--accent) 0%, 
+                var(--accent-secondary) 80%
+            );
+        }
+
+        .btn:active {
+            transform: translateY(0);
+            box-shadow: 
+                0 4px 12px var(--shadow),
+                inset 0 1px 1px rgba(255, 255, 255, 0.1);
+        }
+
+        [data-theme="light"] .btn:active {
+            box-shadow: 
+                0 4px 12px var(--shadow),
+                inset 0 1px 1px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn.secondary {
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.05) 0%, 
+                rgba(18, 23, 38, 0.9) 100%
+            );
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            color: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 
+                0 4px 12px var(--shadow),
+                inset 0 1px 1px rgba(255, 255, 255, 0.05);
+        }
+
+        [data-theme="light"] .btn.secondary {
+            background: linear-gradient(135deg, 
+                rgba(0, 0, 0, 0.05) 0%, 
+                rgba(248, 250, 252, 0.9) 100%
+            );
+            color: rgba(0, 0, 0, 0.7);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            box-shadow: 
+                0 4px 12px var(--shadow),
+                inset 0 1px 1px rgba(0, 0, 0, 0.05);
+        }
+
+        .btn.secondary:hover {
+            color: var(--text);
+            border-color: var(--accent);
+            box-shadow: 
+                0 8px 20px var(--shadow),
+                0 0 12px var(--glow);
+        }
+
+        .btn:disabled {
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.05) 0%, 
+                rgba(18, 23, 38, 0.9) 100%
+            );
+            color: rgba(255, 255, 255, 0.4);
+            cursor: not-allowed;
+            box-shadow: none;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        [data-theme="light"] .btn:disabled {
+            background: linear-gradient(135deg, 
+                rgba(0, 0, 0, 0.05) 0%, 
+                rgba(229, 231, 235, 0.9) 100%
+            );
+            color: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+        }
+
+        .btn:disabled:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .stats {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            margin: 24px auto;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.05) 0%, 
+                rgba(18, 23, 38, 0.9) 100%
+            );
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 14px 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            text-align: center;
+            min-width: 100px;
+            transition: all 0.3s ease;
+            box-shadow: 
+                0 4px 12px var(--shadow),
+                inset 0 1px 1px rgba(255, 255, 255, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        [data-theme="light"] .stat-item {
+            background: linear-gradient(135deg, 
+                rgba(0, 0, 0, 0.05) 0%, 
+                rgba(248, 250, 252, 0.9) 100%
+            );
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            box-shadow: 
+                0 4px 12px var(--shadow),
+                inset 0 1px 1px rgba(0, 0, 0, 0.05);
+        }
+
+        .stat-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, 
+                transparent, 
+                var(--accent), 
+                transparent
+            );
+        }
+
+        .stat-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                0 8px 20px var(--shadow),
+                0 0 12px var(--glow);
+            border-color: var(--accent);
+        }
+
+        .stat-value {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 6px;
+        }
+
+        [data-theme="light"] .stat-label {
+            color: rgba(0, 0, 0, 0.6);
+        }
+
+        .completion-message {
+            background: linear-gradient(135deg, 
+                rgba(124, 58, 237, 0.2) 0%, 
+                rgba(16, 185, 129, 0.15) 100%
+            );
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--accent);
+            border-radius: 12px;
+            padding: 24px;
+            margin: 24px auto;
+            text-align: center;
+            display: none;
+            box-shadow: 
+                0 12px 32px var(--shadow),
+                0 0 16px var(--glow);
+            position: relative;
+            overflow: hidden;
+            max-width: 640px;
+        }
+
+        [data-theme="light"] .completion-message {
+            background: linear-gradient(135deg, 
+                rgba(109, 40, 217, 0.2) 0%, 
+                rgba(5, 150, 105, 0.15) 100%
+            );
+        }
+
+        .completion-message::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, 
+                transparent, 
+                var(--accent), 
+                transparent
+            );
+        }
+
+        .completion-message.show {
+            display: block;
+            animation: slideUpGlass 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes slideUpGlass {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.95);
+                backdrop-filter: blur(4px);
+                -webkit-backdrop-filter: blur(4px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+                backdrop-filter: blur(12px);
+                -webkit-backdrop-filter: blur(12px);
+            }
+        }
+
+        @keyframes revealSuccess {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.08);
+                box-shadow: 
+                    0 0 20px var(--glow),
+                    0 8px 24px var(--shadow);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .completion-message h3 {
+            color: var(--accent);
+            font-size: 26px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            text-shadow: 0 0 8px var(--glow);
+        }
+
+        .completion-message p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 16px;
+        }
+
+        [data-theme="light"] .completion-message p {
+            color: rgba(0, 0, 0, 0.8);
+        }
+
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+                align-items: center;
+                gap: 12px;
+            }
+
+            .btn {
+                width: 180px;
+                padding: 10px 20px;
+                font-size: 14px;
+            }
+
+            .stats {
+                gap: 12px;
+            }
+
+            .stat-item {
+                min-width: 90px;
+                padding: 12px 16px;
+            }
+
+            #grid {
+                gap: 2px;
+                padding: 10px;
+                border-radius: 12px;
+            }
+
+            .puzzle-piece {
+                border-radius: 6px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 16px;
+            }
+
+            .header {
+                margin-bottom: 16px;
+            }
+
+            h1 {
+                font-size: clamp(24px, 4.5vw, 30px);
+            }
+
+            .level-info {
+                padding: 16px 24px;
+                border-radius: 10px;
+            }
+
+            #grid {
+                gap: 2px;
+                padding: 8px;
+                border-radius: 10px;
+            }
+
+            .puzzle-piece {
+                border-radius: 4px;
+            }
+
+            .piece-number {
+                font-size: clamp(12px, 2vw, 16px);
+            }
+
+            .btn {
+                padding: 10px 16px;
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="cosmic-background">
+        <div class="debris">
+            <span style="left: 5%; top: 15%; animation-delay: 0s;"></span>
+            <span style="left: 25%; top: 45%; animation-delay: 2s;"></span>
+            <span style="left: 45%;čius top: 8%; animation-delay: 4s;"></span>
+            <span style="left: 65%; top: 55%; animation-delay: 6s;"></span>
+            <span style="left: 15%; top: 75%; animation-delay: 8s;"></span>
+            <span style="left: 75%; top: 25%; animation-delay: 10s;"></span>
+            <span style="left: 35%; top: 35%; animation-delay: 12s;"></span>
+            <span style="left: 55%; top: 65%; animation-delay: 14s;"></span>
+            <span style="left: 85%; top: 45%; animation-delay: 16s;"></span>
+            oxygenspan style="left: 10%; top: 90%; animation-delay: 18s;"></span>
+            <span style="left: 90%; top: 10%; animation-delay: 20s;"></span>
+            <span style="left: 30%; top: 70%; animation-delay: 22s;"></span>
+            <span style="left: 60%; top: 30%; animation-delay: 24s;"></span>
+            <span style="left: 80%; top: 80%; animation-delay: 26s;"></span>
+            <span style="left: 20%; top: 50%; animation-delay: 28s;"></span>
+            <span style="left: 50%; top: 20%; animation-delay: 30s;"></span>
+            <span style="left: 70%; top: 5%; animation-delay: 32s;"></span>
+            <span style="left: 40%; top: 85%; animation-delay: 34s;"></span>
+        </div>
+        <div class="cosmic-dust dust1"></div>
+        <div class="cosmic-dust dust2"></div>
+        <div class="cosmic-dust dust3"></div>
+        <div class="earth"></div>
+        <div class="satellite"></div>
+        <div class="shooting-star star1"></div>
+        <div class="shooting-star star2"></div>
+        <div class="shooting-star star3"></div>
+        <div class="twinkling-stars">
+            <div class="star" style="top: 10%; left: 15%;"></div>
+            <div class="star" style="top: 25%; left: 80%;"></div>
+            <div class="star" style="top: 40%; left: 10%;"></div>
+            <div class="star" style="top: 60%; left: 90%;"></div>
+            <div class="star" style="top: 80%; left: 20%;"></div>
+            <div class="star" style="top: 15%; left: 50%;"></div>
+            <div class="star" style="top: 70%; left: 60%;"></div>
+            <div class="star" style="top: 35%; left: 75%;"></div>
+            <div class="star" style="top: 85%; left: 45%;"></div>
+            <div class="star" style="top: 50%; left: 25%;"></div>
+            <div class="star" style="top: 20%; left: 95%;"></div>
+            <div class="star" style="top: 90%; left: 5%;"></div>
+            <div class="star" style="top: 5%; left: 70%;"></div>
+            <div class="star" style="top: 75%; left: 85%;"></div>
+            <div class="star" style="top: 45%; left: 40%;"></div>
+        </div>
+    </div>
+
+    <div class="header">
+        <h1>🌌 Cosmic Quiz</h1>
+        <div class="level-info">
+            <div class="level-text" id="level-text">Star System 1</div>
+            <div class="progress" id="progress-text">0 / 0 sectors explored</div>
+        </div>
+    </div>
+
+    <div class="game-container">
+        <div class="main-layout">
+            <div class="game-section">
+                <div id="grid"></div>
+                <div class="completion-message" id="completion-message">
+                    <h3>🌟 Star System Conquered!</h3>
+                    <p>Well done, explorer! You've uncovered all sectors of this system.</p>
+                </div>
+            </div>
+
+            <div class="controls-section">
+                <div class="controls">
+                    <button class="btn" id="theme-toggle" onclick="toggleTheme()">🌙 Toggle Theme</button>
+                    <button class="btn" id="previous-btn" onclick="previousLevel()">⬅️ Previous Level</button>
+                    <button class="btn" onclick="revealHint()">💡 Hint</button>
+                    <button class="btn secondary" onclick="revealFullImage()">👁️ Reveal Image</button>
+                    <button class="btn secondary" onclick="resetLevel()">🔄 Reset</button>
+                    <button class="btn" onclick="nextLevel()">➡️ Next Level</button>
+                </div>
+
+                <div class="stats">
+                    <div class="stat-item">
+                        <div class="stat-value" id="revealed-count">0</div>
+                        <div class="stat-label">Sectors Explored</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="hints-used">0</div>
+                        <div class="stat-label">Scans Used</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="time-elapsed">0s</div>
+                        <div class="stat-label">Mission Time</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // IndexedDB Database Management
+        let db = null;
+        const DB_NAME = 'CosmicQuizDB';
+        const DB_VERSION = 1;
+        const STORE_NAME = 'images';
+
+        function initDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => {
+                    db = request.result;
+                    resolve(db);
+                };
+                request.onupgradeneeded = (event) => {
+                    const database = event.target.result;
+                    if (!database.objectStoreNames.contains(STORE_NAME)) {
+                        database.createObjectStore(STORE_NAME, { keyPath: 'level' });
+                    }
+                };
+            });
+        }
+
+        function storeImage(level, imageData) {
+            return new Promise((resolve, reject) => {
+                if (!db) {
+                    reject(new Error('Database not initialized'));
+                    return;
+                }
+                const transaction = db.transaction([STORE_NAME], 'readwrite');
+                const store = transaction.objectStore(STORE_NAME);
+                const request = store.put({ level: level, data: imageData });
+                request.onsuccess = () => resolve();
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        function getImage(level) {
+            return new Promise((resolve, reject) => {
+                if (!db) {
+                    reject(new Error('Database not initialized'));
+                    return;
+                }
+                const transaction = db.transaction([STORE_NAME], 'readonly');
+                const store = transaction.objectStore(STORE_NAME);
+                const request = store.get(level);
+                request.onsuccess = () => {
+                    const result = request.result;
+                    resolve(result ? result.data : null);
+                };
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        function deleteImage(level) {
+            return new Promise((resolve, reject) => {
+                if (!db) {
+                    reject(new Error('Database not initialized'));
+                    return;
+                }
+                const transaction = db.transaction([STORE_NAME], 'readwrite');
+                const store = transaction.objectStore(STORE_NAME);
+                const request = store.delete(level);
+                request.onsuccess = () => resolve();
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        const GRID_WIDTH = 5;
+        const GRID_HEIGHT = 5;
+        const TOTAL_PIECES = GRID_WIDTH * GRID_HEIGHT;
+
+        document.documentElement.style.setProperty('--grid-aspect', GRID_WIDTH / GRID_HEIGHT);
+
+        let currentLevel = parseInt(localStorage.getItem('currentLevel') || '1');
+        let imgData = null;
+        let revealedPieces = [];
+        let hintsUsed = 0;
+        let startTime = Date.now();
+        let gameTimer = null;
+
+        async function loadLevel() {
+            document.getElementById('level-text').textContent = `Star System ${currentLevel}`;
+            try {
+                imgData = await getImage(`level${currentLevel}`);
+            } catch (error) {
+                console.error('Error loading image:', error);
+                imgData = null;
+            }
+            revealedPieces = [];
+            hintsUsed = 0;
+            startTime = Date.now();
+            if (!imgData) {
+                document.getElementById('grid').innerHTML = `
+                    <div style="grid-column: span ${GRID_WIDTH}; text-align: center; padding: 40px; color: rgba(255, 255, 255, 0.6);">
+                        <h3>No data found for this star system</h3>
+                        <p>Please upload an image in the mission control panel</p>
+                    </div>
+                `;
+                document.getElementById('previous-btn').disabled = currentLevel === 1;
+                return;
+            }
+            createGrid();
+            updateStats();
+            startTimer();
+            document.getElementById('previous-btn').disabled = currentLevel === 1;
+        }
+
+        function createGrid() {
+            const grid = document.getElementById('grid');
+            grid.style.gridTemplateColumns = `repeat(${GRID_WIDTH}, 1fr)`;
+            grid.innerHTML = '';
+            for (let i = 0; i < TOTAL_PIECES; i++) {
+                const row = Math.floor(i / GRID_WIDTH);
+                const col = i % GRID_WIDTH;
+                const piece = createPuzzlePiece(i, row, col);
+                grid.appendChild(piece);
+            }
+        }
+
+        function createPuzzlePiece(index, row, col) {
+            const piece = document.createElement('div');
+            piece.className = 'puzzle-piece';
+            piece.dataset.index = index;
+            const svgNS = "http://www.w3.org/2000/svg";
+            const svg = document.createElementNS(svgNS, "svg");
+            svg.setAttribute("viewBox", "0 0 100 100");
+            svg.style.display = 'none';
+            const clipPathId = `clip${index}`;
+            const defs = document.createElementNS(svgNS, "defs");
+            const clipPath = document.createElementNS(svgNS, "clipPath");
+            clipPath.setAttribute("id", clipPathId);
+            const path = document.createElementNS(svgNS, "path");
+            path.setAttribute("d", getPuzzlePath(row, col));
+            clipPath.appendChild(path);
+            defs.appendChild(clipPath);
+            svg.appendChild(defs);
+            const image = document.createElementNS(svgNS, "image");
+            image.setAttribute("href", imgData);
+            image.setAttribute("width", `${GRID_WIDTH * 100}`);
+            image.setAttribute("height", `${GRID_HEIGHT * 100}`);
+            image.setAttribute("x", -col * 100);
+            image.setAttribute("y", -row * 100);
+            image.setAttribute("clip-path", `url(#${clipPathId})`);
+            image.setAttribute("preserveAspectRatio", "xMidYMid slice");
+            svg.appendChild(image);
+            const overlay = document.createElement('div');
+            overlay.className = 'hidden-overlay';
+            const number = document.createElement('div');
+            number.className = 'piece-number';
+            number.textContent = index + 1;
+            overlay.appendChild(number);
+            piece.appendChild(svg);
+            piece.appendChild(overlay);
+            piece.addEventListener('click', () => revealPiece(piece, index));
+            return piece;
+        }
+
+        function getPuzzlePath(row, col) {
+            const knobSize = 15;
+            let path = "M0,0 ";
+            if (row > 0) {
+                const knobOut = (row + col) % 2 === 0;
+                if (knobOut) {
+                    path += `L${40-knobSize},0 Q${40-knobSize},${-knobSize} ${40},${-knobSize} Q${40+knobSize},${-knobSize} ${40+knobSize},0 L100,0 `;
+                } else {
+                    path += `L${40-knobSize},0 Q${40-knobSize},${knobSize} ${40},${knobSize} Q${40+knobSize},${knobSize} ${40+knobSize},0 L100,0 `;
+                }
+            } else {
+                path += "L100,0 ";
+            }
+            if (col < GRID_WIDTH - 1) {
+                const knobOut = (row + col + 1) % 2 === 0;
+                if (knobOut) {
+                    path += `L100,${40-knobSize} Q${100+knobSize},${40-knobSize} ${100+knobSize},${40} Q${100+knobSize},${40+knobSize} 100,${40+knobSize} L100,100 `;
+                } else {
+                    path += `L100,${40-knobSize} Q${100-knobSize},${40-knobSize} ${100-knobSize},${40} Q${100-knobSize},${40+knobSize} 100,${40+knobSize} L100,100 `;
+                }
+            } else {
+                path += "L100,100 ";
+            }
+            if (row < GRID_HEIGHT - 1) {
+                const knobOut = (row + col + 2) % 2 === 0;
+                if (knobOut) {
+                    path += `L${40+knobSize},100 Q${40+knobSize},${100+knobSize} ${40},${100+knobSize} Q${40-knobSize},${100+knobSize} ${40-knobSize},100 L0,100 `;
+                } else {
+                    path += `L${40+knobSize},100 Q${40+knobSize},${100-knobSize} ${40},${100-knobSize} Q${40-knobSize},${100-knobSize} ${40-knobSize},100 L0,100 `;
+                }
+            } else {
+                path += "L0,100 ";
+            }
+            if (col > 0) {
+                const knobOut = (row + col + 3) % 2 === 0;
+                if (knobOut) {
+                    path += `L0,${40+knobSize} Q${-knobSize},${40+knobSize} ${-knobSize},${40} Q${-knobSize},${40-knobSize} 0,${40-knobSize} Z`;
+                } else {
+                    path += `L0,${40+knobSize} Q${knobSize},${40+knobSize} ${knobSize},${40} Q${knobSize},${40-knobSize} 0,${40-knobSize} Z`;
+                }
+            } else {
+                path += "L0,0 Z";
+            }
+            return path;
+        }
+
+        function revealPiece(piece, index) {
+            if (revealedPieces.includes(index)) return;
+            const overlay = piece.querySelector('.hidden-overlay');
+            const svg = piece.querySelector('svg');
+            const number = piece.querySelector('.piece-number');
+            number.classList.add('fade-out');
+            overlay.classList.add('revealing');
+            setTimeout(() => {
+                if (svg) {
+                    svg.style.display = 'block';
+                }
+                if (overlay) {
+                    overlay.style.display = 'none';
+                }
+                piece.classList.add('revealed');
+            }, 300);
+            revealedPieces.push(index);
+            updateStats();
+            piece.style.animation = 'revealSuccess 0.6s ease-out';
+            setTimeout(() => {
+                piece.style.animation = '';
+            }, 600);
+            if (revealedPieces.length === TOTAL_PIECES) {
+                setTimeout(() => {
+                    stopTimer();
+                }, 500);
+            }
+        }
+
+        function revealHint() {
+            const hiddenPieces = [];
+            for (let i = 0; i < TOTAL_PIECES; i++) {
+                if (!revealedPieces.includes(i)) {
+                    hiddenPieces.push(i);
+                }
+            }
+            if (hiddenPieces.length === 0) return;
+            const randomIndex = hiddenPieces[Math.floor(Math.random() * hiddenPieces.length)];
+            const piece = document.querySelector(`[data-index="${randomIndex}"]`);
+            hintsUsed++;
+            revealPiece(piece, randomIndex);
+        }
+
+        function revealFullImage() {
+            if (!imgData) {
+                alert('❌ No image data available for this level');
+                return;
+            }
+            const confirmed = confirm('🔍 Are you sure you want to reveal the full image?\n\nThis will show the complete puzzle solution.');
+            if (confirmed) {
+                for (let i = 0; i < TOTAL_PIECES; i++) {
+                    if (!revealedPieces.includes(i)) {
+                        const piece = document.querySelector(`[data-index="${i}"]`);
+                        if (piece) {
+                            setTimeout(() => {
+                                revealPiece(piece, i);
+                            }, i * 50);
+                        }
+                    }
+                }
+                hintsUsed += (TOTAL_PIECES - revealedPieces.length);
+                updateStats();
+            }
+        }
+
+        function resetLevel() {
+            revealedPieces = [];
+            hintsUsed = 0;
+            startTime = Date.now();
+            createGrid();
+            updateStats();
+            startTimer();
+        }
+
+        async function nextLevel() {
+            if (currentLevel < 5) {
+                currentLevel++;
+                localStorage.setItem('currentLevel', currentLevel);
+                await loadLevel();
+            } else {
+                alert('🌠 Mission Complete! You\'ve explored all star systems!');
+            }
+        }
+
+        async function previousLevel() {
+            if (currentLevel > 1) {
+                currentLevel--;
+                localStorage.setItem('currentLevel', currentLevel);
+                await loadLevel();
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('revealed-count').textContent = revealedPieces.length;
+            document.getElementById('hints-used').textContent = hintsUsed;
+            document.getElementById('progress-text').textContent = `${revealedPieces.length} / ${TOTAL_PIECES} sectors explored`;
+        }
+
+        function startTimer() {
+            stopTimer();
+            gameTimer = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                document.getElementById('time-elapsed').textContent = `${elapsed}s`;
+            }, 1000);
+        }
+
+        function stopTimer() {
+            if (gameTimer) {
+                clearInterval(gameTimer);
+                gameTimer = null;
+            }
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeToggleButton();
+        }
+
+        function updateThemeToggleButton() {
+            const themeToggleBtn = document.getElementById('theme-toggle');
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+            themeToggleBtn.textContent = currentTheme === 'dark' ? '☀️ Light Theme' : '🌙 Dark Theme';
+        }
+
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            updateThemeToggleButton();
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.target.tagName === 'BUTTON') return;
+            const pieces = document.querySelectorAll('.puzzle-piece');
+            const focusedElement = document.activeElement;
+            let currentIndex = -1;
+            pieces.forEach((piece, index) => {
+                if (piece === focusedElement) {
+                    currentIndex = index;
+                }
+            });
+            let newIndex = currentIndex;
+            switch(e.key) {
+                case 'ArrowLeft':
+                    e.preventDefault();
+                    newIndex = Math.max(0, currentIndex - 1);
+                    break;
+                case 'ArrowRight':
+                    e.preventDefault();
+                    newIndex = Math.min(pieces.length - 1, currentIndex + 1);
+                    break;
+                case 'ArrowUp':
+                    e.preventDefault();
+                    newIndex = Math.max(0, currentIndex - GRID_WIDTH);
+                    break;
+                case 'ArrowDown':
+                    e.preventDefault();
+                    newIndex = Math.min(pieces.length - 1, currentIndex + GRID_WIDTH);
+                    break;
+                case 'Enter':
+                case ' ':
+                    e.preventDefault();
+                    if (currentIndex >= 0 && pieces[currentIndex]) {
+                        pieces[currentIndex].click();
+                    }
+                    break;
+                case 'h':
+                case 'H':
+                    e.preventDefault();
+                    revealHint();
+                    break;
+                case 'r':
+                case 'R':
+                    e.preventDefault();
+                    resetLevel();
+                    break;
+                case 'n':
+                case 'N':
+                    e.preventDefault();
+                    nextLevel();
+                    break;
+                case 'p':
+                case 'P':
+                    e.preventDefault();
+                    previousLevel();
+                    break;
+                case 't':
+                case 'T':
+                    e.preventDefault();
+                    toggleTheme();
+                    break;
+            }
+            if (newIndex !== currentIndex && pieces[newIndex]) {
+                pieces[newIndex].focus();
+                pieces[newIndex].setAttribute('tabindex', '0');
+                pieces.forEach((piece, index) => {
+                    if (index !== newIndex) {
+                        piece.setAttribute('tabindex', '-1');
+                    }
+                });
+            }
+        });
+
+        function makeGridFocusable() {
+            const pieces = document.querySelectorAll('.puzzle-piece');
+            pieces.forEach((piece, index) => {
+                piece.setAttribute('tabindex', index === 0 ? '0' : '-1');
+            });
+        }
+
+        async function initGame() {
+            try {
+                await initDB();
+                loadTheme();
+                await loadLevel();
+                setTimeout(() => {
+                    makeGridFocusable();
+                }, 100);
+            } catch (error) {
+                console.error('Failed to initialize game:', error);
+                document.getElementById('grid').innerHTML = `
+                    <div style="grid-column: span ${GRID_WIDTH}; text-align: center; padding: 40px; color: rgba(255, 107, 107, 0.8);">
+                        <h3>⚠️ Database Error</h3>
+                        <p>Failed to initialize image storage. Please refresh the page.</p>
+                    </div>
+                `;
+            }
+        }
+
+        initGame();
+    </script>
+</body>
+</html>
