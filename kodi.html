@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ISRO Quiz</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; font-family: 'Space Grotesk', sans-serif; overflow: hidden; color: #111; }
+
+    /* Background Video + Overlay */
+    #bgContainer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; }
+    #bgVideo {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      position: absolute; top: 0; left: 0;
+    }
+    #bgOverlay {
+      position: absolute; top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(255, 255, 255, 0.4);
+      z-index: -1;
+    }
+
+    .center-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100dvh;
+      padding: 30px;
+    }
+
+    #quizContainer {
+      max-width: 760px;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(12px);
+      border-radius: 20px;
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
+      padding: 50px;
+      text-align: center;
+    }
+
+    #imagePlaceholder {
+      width: 150px; height: 150px; border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #111;
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
+      margin-bottom: 25px;
+    }
+
+    #setProgress {
+      font-size: 20px; color: #444;
+      margin-bottom: 20px; font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    #question {
+      font-size: 28px; font-weight: 700;
+      line-height: 1.4; margin-bottom: 30px;
+      color: #111;
+    }
+
+    #answer {
+      font-size: 28px; font-style: italic;
+      color: #2563eb; margin-top: 20px;
+      min-height: 32px;
+      font-weight: 600;
+    }
+
+    button {
+      background-color: #2563eb; color: white;
+      border: none; padding: 14px 36px;
+      font-size: 18px; font-weight: 600;
+      border-radius: 10px; cursor: pointer;
+      margin: 12px 10px 0; transition: background 0.3s, transform 0.2s;
+      font-family: 'Space Grotesk', sans-serif;
+    }
+    button:hover:not(:disabled) { background-color: #1e3a8a; transform: translateY(-2px); }
+    button:disabled { background: #aaa; cursor: not-allowed; }
+  </style>
+</head>
+<body>
+
+  <div id="bgContainer">
+    <video id="bgVideo" muted autoplay loop playsinline>
+      <source src="https://envs.sh/dKh.mp4" type="video/mp4" />
+      Your browser doesn't support video.
+    </video>
+    <div id="bgOverlay"></div>
+  </div>
+
+  <div class="center-wrapper">
+    <div id="quizContainer">
+      <img id="imagePlaceholder" src="https://envs.sh/dGy.jpg" alt="ISRO Logo" />
+      <div id="setProgress">Set 1 of 5</div>
+      <div id="question">Loading question...</div>
+      <button id="showAnswerBtn">Show Answer</button>
+      <div id="answer"></div>
+      <div>
+        <button id="continueBtn" disabled>Continue</button>
+        <button id="skipSetBtn">Quit to Next Set</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const quizData = [
+    {
+      set: 1,
+      questions: [
+        { question: "What is the full form of GSLV?", answer: "Geosynchronous Satellite Launch Vehicle" },
+        { question: "By which year is the Indian Space Station expected to be fully operational?", answer: "2035" },
+        { question: "Which ISRO mission aims to study Venus?", answer: "Shukrayaan-1" }
+      ]
+    },
+    {
+      set: 2,
+      questions: [
+        { question: "Which was the first Indian satellite to provide direct-to-home TV services?", answer: "INSAT-4A" },
+        { question: "Name the uncrewed test flight conducted in 2023 to test the crew escape system for Gaganyaan", answer: "TV-D1" },
+        { question: "What is the planned orbital altitude for Gaganyaan?", answer: "400 km" }
+      ]
+    },
+    {
+      set: 3,
+      questions: [
+        { question: "What is the proposed crew capacity for each Indian Space Station module?", answer: "3–4 astronauts" },
+        { question: "What is the name of India’s Sun mission?", answer: "Aditya-L1" },
+        { question: "Which ISRO project aims to develop indigenous docking technology for the space station?", answer: "SPADEX (Space Docking Experiment)" }
+      ]
+    },
+    {
+      set: 4,
+      questions: [
+        { question: "Who was the first human in space?", answer: "Yuri Gagarin (1961)" },
+        { question: "Which Indian mission aims to monitor objects in Earth’s orbit?", answer: "Rohini Satellite RS-1 (1980)" },
+        { question: "Which satellite was India’s first dedicated astronomy satellite?", answer: "Astrosat" }
+      ]
+    },
+    {
+      set: 5,
+      questions: [
+        { question: "When did India successfully launch its first lunar mission, Chandrayaan-1?", answer: "2008" },
+        { question: "Which Indian rocket is nicknamed “Bahubali”?", answer: "LVM3" },
+        { question: "Which was the first spacecraft to successfully land on Mars?", answer: "Viking 1 (1976)" }
+      ]
+    }
+  ];
+    let currentSet = 0, currentQuestion = 0;
+    const setProgressEl = document.getElementById('setProgress');
+    const questionEl = document.getElementById('question');
+    const answerEl = document.getElementById('answer');
+    const showAnswerBtn = document.getElementById('showAnswerBtn');
+    const continueBtn = document.getElementById('continueBtn');
+    const skipSetBtn = document.getElementById('skipSetBtn');
+
+    function loadQuestion() {
+      if (currentSet >= quizData.length) {
+        setProgressEl.textContent = "Completed";
+        questionEl.textContent = "🚀 All sets completed!";
+        answerEl.textContent = "";
+        showAnswerBtn.style.display = 'none';
+        continueBtn.style.display = 'none';
+        skipSetBtn.style.display = 'none';
+        return;
+      }
+      const set = quizData[currentSet];
+      const currentQ = set.questions[currentQuestion];
+      setProgressEl.textContent = `Set ${currentSet+1} of ${quizData.length}`;
+      questionEl.textContent = currentQ.question;
+      answerEl.textContent = '';
+      showAnswerBtn.disabled = false;
+      continueBtn.disabled = true;
+    }
+
+    showAnswerBtn.addEventListener('click', () => {
+      answerEl.textContent = quizData[currentSet].questions[currentQuestion].answer;
+      showAnswerBtn.disabled = true;
+      continueBtn.disabled = false;
+    });
+
+    continueBtn.addEventListener('click', () => {
+      currentQuestion++;
+      if (currentQuestion >= quizData[currentSet].questions.length) {
+        currentSet++;
+        currentQuestion = 0;
+      }
+      loadQuestion();
+    });
+
+    skipSetBtn.addEventListener('click', () => {
+      currentSet++;
+      currentQuestion = 0;
+      loadQuestion();
+    });
+
+    loadQuestion();
+    window.addEventListener('load', () => {
+  const video = document.getElementById('bgVideo');
+  video.play().catch(e => console.warn('Autoplay blocked:', e));
+});
+
+  </script>
+</body>
+</html>
