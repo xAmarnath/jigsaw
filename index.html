@@ -1,20 +1,276 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <title>Cosmic Quiz</title>
+    <title>Cosmic Quiz - Picture Round</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #0a0e1a; /* Deep cosmic navy */
-            --card: #121726; /* Dark panel background */
-            --text: #e0e6ff; /* Starlight off-white */
-            --accent: #7c3aed; /* Nebula purple */
-            --accent-secondary: #10b981; /* Cosmic emerald */
-            --shadow: rgba(0, 0, 0, 0.7); /* Black hole shadow */
-            --glow: rgba(124, 58, 237, 0.2); /* Nebula glow */
+            --bg: #0a0e1a;
+            /* Deep cosmic navy */
+            --card: #121726;
+            /* Dark panel background */
+            --text: #e0e6ff;
+            /* Starlight off-white */
+            --accent: #1e3a8a;
+            /* Dark blue for light mode */
+            --accent-secondary: #3b82f6;
+            /* Lighter blue for gradient */
+            --shadow: rgba(0, 0, 0, 0.7);
+            /* Black hole shadow */
+            --glow: rgba(59, 130, 246, 0.2);
+            /* Blue glow */
             font-family: 'Inter', sans-serif;
+        }
+
+        body.light-theme {
+            --bg: #f8fafc;
+            /* Light gray-white background */
+            --card: #ffffff;
+            /* White panel background */
+            --text: #1f2937;
+            /* Dark gray text */
+            --accent: #3b82f6;
+            /* Blue accent for light mode */
+            --accent-secondary: #1e3a8a;
+            /* Darker blue for gradient */
+            --shadow: rgba(0, 0, 0, 0.1);
+            /* Light shadow */
+            --glow: rgba(59, 130, 246, 0.1);
+            /* Subtle blue glow */
+        }
+
+        body.light-theme .level-text,
+        body.light-theme h1 {
+            background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        body.light-theme .progress {
+            color: rgba(0, 0, 0, 0.6);
+        }
+
+        body.light-theme .level-info {
+            background: linear-gradient(135deg,
+                    rgba(0, 0, 0, 0.05) 0%,
+                    rgba(255, 255, 255, 0.9) 100%);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+        }
+
+        body.light-theme .level-info::before {
+            background: linear-gradient(90deg,
+                    transparent,
+                    var(--accent),
+                    transparent);
+        }
+
+        body.light-theme #grid {
+            background: linear-gradient(135deg,
+                    rgba(255, 255, 255, 0.8) 0%,
+                    rgba(243, 244, 246, 0.9) 100%);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        body.light-theme #grid::before {
+            background: radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.05), transparent 50%);
+        }
+
+        body.light-theme .puzzle-piece {
+            background: linear-gradient(135deg,
+                    rgba(0, 0, 0, 0.05) 0%,
+                    rgba(255, 255, 255, 0.9) 100%);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+        }
+
+        body.light-theme .puzzle-piece:hover {
+            background: linear-gradient(135deg,
+                    rgba(59, 130, 246, 0.1) 0%,
+                    rgba(255, 255, 255, 0.9) 100%);
+            border-color: var(--accent);
+        }
+
+        body.light-theme .piece-number {
+            background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        body.light-theme .hidden-overlay {
+            background: linear-gradient(135deg,
+                    rgba(243, 244, 246, 0.95) 0%,
+                    rgba(255, 255, 255, 0.9) 100%);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        body.light-theme .btn {
+            color: #ffffff;
+        }
+
+        body.light-theme .btn.secondary {
+            background: linear-gradient(135deg,
+                    rgba(0, 0, 0, 0.05) 0%,
+                    rgba(255, 255, 255, 0.9) 100%);
+            color: rgba(0, 0, 0, 0.7);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+        }
+
+        body.light-theme .btn.secondary:hover {
+            color: var(--text);
+            border-color: var(--accent);
+        }
+
+        body.light-theme .btn:disabled {
+            background: linear-gradient(135deg,
+                    rgba(0, 0, 0, 0.05) 0%,
+                    rgba(255, 255, 255, 0.9) 100%);
+            color: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+        }
+
+        body.light-theme .stat-item {
+            background: linear-gradient(135deg,
+                    rgba(0, 0, 0, 0.05) 0%,
+                    rgba(255, 255, 255, 0.9) 100%);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+        }
+
+        body.light-theme .stat-item::before {
+            background: linear-gradient(90deg,
+                    transparent,
+                    var(--accent),
+                    transparent);
+        }
+
+        body.light-theme .stat-value {
+            color: var(--accent);
+        }
+
+        body.light-theme .stat-label {
+            color: rgba(0, 0, 0, 0.6);
+        }
+
+        body.light-theme .completion-message {
+            background: linear-gradient(135deg,
+                    rgba(59, 130, 246, 0.1) 0%,
+                    rgba(16, 185, 129, 0.08) 100%);
+            border: 1px solid var(--accent);
+        }
+
+        body.light-theme .completion-message::before {
+            background: linear-gradient(90deg,
+                    transparent,
+                    var(--accent),
+                    transparent);
+        }
+
+        body.light-theme .completion-message h3 {
+            color: var(--accent);
+        }
+
+        body.light-theme .completion-message p {
+            color: rgba(0, 0, 0, 0.8);
+        }
+
+        body.light-theme .cosmic-background::before {
+            background:
+                linear-gradient(45deg, transparent, rgba(59, 130, 246, 0.02), transparent),
+                url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><circle cx="50" cy="50" r="1" fill="rgba(0,0,0,0.1)"/></svg>') repeat;
+            opacity: 0.3;
+        }
+
+        body.light-theme .debris span:nth-child(1n) {
+            background: rgba(0, 0, 0, 0.3);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        body.light-theme .debris span:nth-child(2n) {
+            background: rgba(59, 130, 246, 0.3);
+            box-shadow: 0 0 8px rgba(59, 130, 246, 0.2);
+        }
+
+        body.light-theme .debris span:nth-child(3n) {
+            background: rgba(16, 185, 129, 0.3);
+            box-shadow: 0 0 12px rgba(16, 185, 129, 0.1);
+        }
+
+        body.light-theme .debris span:nth-child(4n) {
+            background: rgba(59, 130, 246, 0.4);
+            box-shadow: 0 0 6px rgba(59, 130, 246, 0.2);
+        }
+
+        body.light-theme .debris span:nth-child(5n) {
+            background: rgba(245, 158, 11, 0.3);
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.1);
+        }
+
+        body.light-theme .cosmic-dust {
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.05) 0%, transparent 70%);
+        }
+
+        body.light-theme .dust2 {
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.04) 0%, transparent 70%);
+        }
+
+        body.light-theme .dust3 {
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.03) 0%, transparent 70%);
+        }
+
+        body.light-theme .earth {
+            background:
+                radial-gradient(circle at 30% 30%, #4ade80 20%, #22c55e 40%, #16a34a 60%, #15803d 80%),
+                linear-gradient(45deg, #0ea5e9 0%, #0284c7 50%, #0369a1 100%);
+            box-shadow:
+                0 0 30px rgba(34, 197, 94, 0.2),
+                inset -20px -20px 40px rgba(0, 0, 0, 0.2);
+            opacity: 0.7;
+        }
+
+        body.light-theme .earth::before {
+            background: #16a34a;
+            opacity: 0.7;
+        }
+
+        body.light-theme .earth::after {
+            background: #15803d;
+            opacity: 0.8;
+        }
+
+        body.light-theme .satellite {
+            background: #94a3b8;
+        }
+
+        body.light-theme .satellite::before,
+        body.light-theme .satellite::after {
+            background: #64748b;
+        }
+
+        body.light-theme .shooting-star {
+            background: #1f2937;
+            box-shadow: 0 0 10px #1f2937;
+        }
+
+        body.light-theme .shooting-star::before {
+            background: linear-gradient(90deg,
+                    rgba(31, 41, 55, 0.4) 0%,
+                    rgba(31, 41, 55, 0.2) 50%,
+                    transparent 100%);
+        }
+
+        body.light-theme .twinkling-stars .star {
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        body.light-theme .twinkling-stars .star:nth-child(3n) {
+            background: rgba(59, 130, 246, 0.3);
+        }
+
+        body.light-theme .twinkling-stars .star:nth-child(4n) {
+            background: rgba(16, 185, 129, 0.3);
         }
 
         * {
@@ -24,8 +280,8 @@
         }
 
         body {
-            background: 
-                radial-gradient(circle at 20% 20%, rgba(124, 58, 237, 0.15), transparent 30%),
+            background:
+                radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.15), transparent 30%),
                 radial-gradient(circle at 80% 80%, rgba(16, 185, 129, 0.1), transparent 25%),
                 linear-gradient(135deg, var(--bg) 0%, #1a2238 50%, var(--bg) 100%);
             color: var(--text);
@@ -34,7 +290,14 @@
             padding: 24px;
             position: relative;
             overflow-x: hidden;
-            overflow-y: auto; /* Enable vertical scrolling */
+            overflow-y: auto;
+        }
+
+        body.light-theme {
+            background:
+                radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.05), transparent 30%),
+                radial-gradient(circle at 80% 80%, rgba(16, 185, 129, 0.03), transparent 25%),
+                linear-gradient(135deg, var(--bg) 0%, #f3f4f6 50%, var(--bg) 100%);
         }
 
         body::before {
@@ -44,8 +307,8 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: 
-                linear-gradient(45deg, transparent, rgba(124, 58, 237, 0.05), transparent),
+            background:
+                linear-gradient(45deg, transparent, rgba(59, 130, 246, 0.05), transparent),
                 url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><circle cx="50" cy="50" r="1" fill="rgba(255,255,255,0.3)"/></svg>') repeat;
             background-size: 100px 100px;
             pointer-events: none;
@@ -53,7 +316,7 @@
             opacity: 0.6;
         }
 
-        /* Enhanced Cosmic Background with Moving Debris */
+        /* Cosmic Background Elements (unchanged) */
         .cosmic-background {
             position: fixed;
             top: 0;
@@ -65,7 +328,6 @@
             overflow: hidden;
         }
 
-        /* Cosmic Space Debris */
         .debris {
             position: absolute;
             top: 0;
@@ -81,7 +343,6 @@
             opacity: 0;
         }
 
-        /* Different types of cosmic debris */
         .debris span:nth-child(1n) {
             width: 3px;
             height: 3px;
@@ -93,8 +354,8 @@
         .debris span:nth-child(2n) {
             width: 2px;
             height: 2px;
-            background: rgba(124, 58, 237, 0.7);
-            box-shadow: 0 0 8px rgba(124, 58, 237, 0.4);
+            background: rgba(59, 130, 246, 0.7);
+            box-shadow: 0 0 8px rgba(59, 130, 246, 0.4);
             animation-duration: 18s;
         }
 
@@ -127,12 +388,15 @@
                 transform: translate(-100px, 100vh) rotate(0deg);
                 opacity: 0;
             }
+
             10% {
                 opacity: 1;
             }
+
             90% {
                 opacity: 1;
             }
+
             100% {
                 transform: translate(100vw, -100px) rotate(360deg);
                 opacity: 0;
@@ -142,7 +406,7 @@
         .cosmic-dust {
             position: absolute;
             border-radius: 50%;
-            background: radial-gradient(circle, rgba(124, 58, 237, 0.1) 0%, transparent 70%);
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 70%);
             animation: dustFloat 25s linear infinite;
             opacity: 0;
         }
@@ -178,21 +442,23 @@
                 transform: translateX(-200px) scale(0.5);
                 opacity: 0;
             }
+
             20% {
                 opacity: 1;
                 transform: translateX(0) scale(1);
             }
+
             80% {
                 opacity: 1;
                 transform: translateX(80vw) scale(1.2);
             }
+
             100% {
                 transform: translateX(100vw) scale(0.8);
                 opacity: 0;
             }
         }
 
-        /* Spinning Earth */
         .earth {
             position: absolute;
             width: 120px;
@@ -200,10 +466,10 @@
             right: 10%;
             bottom: 15%;
             border-radius: 50%;
-            background: 
+            background:
                 radial-gradient(circle at 30% 30%, #4ade80 20%, #22c55e 40%, #16a34a 60%, #15803d 80%),
                 linear-gradient(45deg, #0ea5e9 0%, #0284c7 50%, #0369a1 100%);
-            box-shadow: 
+            box-shadow:
                 0 0 30px rgba(34, 197, 94, 0.3),
                 inset -20px -20px 40px rgba(0, 0, 0, 0.3);
             animation: earthSpin 20s linear infinite;
@@ -235,11 +501,15 @@
         }
 
         @keyframes earthSpin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
 
-        /* Satellites */
         .satellite {
             position: absolute;
             width: 12px;
@@ -275,11 +545,15 @@
         }
 
         @keyframes satelliteOrbit {
-            0% { transform: rotate(0deg) translateX(200px) rotate(0deg); }
-            100% { transform: rotate(360deg) translateX(200px) rotate(-360deg); }
+            0% {
+                transform: rotate(0deg) translateX(200px) rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg) translateX(200px) rotate(-360deg);
+            }
         }
 
-        /* Shooting Stars */
         .shooting-star {
             position: absolute;
             width: 2px;
@@ -296,10 +570,10 @@
             left: 100%;
             width: 100px;
             height: 1px;
-            background: linear-gradient(90deg, 
-                rgba(224, 231, 255, 0.8) 0%, 
-                rgba(224, 231, 255, 0.4) 50%, 
-                transparent 100%);
+            background: linear-gradient(90deg,
+                    rgba(224, 231, 255, 0.8) 0%,
+                    rgba(224, 231, 255, 0.4) 50%,
+                    transparent 100%);
         }
 
         .star1 {
@@ -324,27 +598,65 @@
         }
 
         @keyframes shootingStar1 {
-            0% { transform: translate(0, 0); opacity: 0; }
-            5% { opacity: 1; }
-            95% { opacity: 1; }
-            100% { transform: translate(-100vw, 50vh); opacity: 0; }
+            0% {
+                transform: translate(0, 0);
+                opacity: 0;
+            }
+
+            5% {
+                opacity: 1;
+            }
+
+            95% {
+                opacity: 1;
+            }
+
+            100% {
+                transform: translate(-100vw, 50vh);
+                opacity: 0;
+            }
         }
 
         @keyframes shootingStar2 {
-            0% { transform: translate(0, 0); opacity: 0; }
-            5% { opacity: 1; }
-            95% { opacity: 1; }
-            100% { transform: translate(-100vw, 30vh); opacity: 0; }
+            0% {
+                transform: translate(0, 0);
+                opacity: 0;
+            }
+
+            5% {
+                opacity: 1;
+            }
+
+            95% {
+                opacity: 1;
+            }
+
+            100% {
+                transform: translate(-100vw, 30vh);
+                opacity: 0;
+            }
         }
 
         @keyframes shootingStar3 {
-            0% { transform: translate(0, 0); opacity: 0; }
-            5% { opacity: 1; }
-            95% { opacity: 1; }
-            100% { transform: translate(-100vw, 40vh); opacity: 0; }
+            0% {
+                transform: translate(0, 0);
+                opacity: 0;
+            }
+
+            5% {
+                opacity: 1;
+            }
+
+            95% {
+                opacity: 1;
+            }
+
+            100% {
+                transform: translate(-100vw, 40vh);
+                opacity: 0;
+            }
         }
 
-        /* Twinkling Stars */
         .twinkling-stars {
             position: absolute;
             top: 0;
@@ -370,7 +682,7 @@
         .twinkling-stars .star:nth-child(3n) {
             animation-duration: 2.5s;
             animation-delay: 2s;
-            background: rgba(124, 58, 237, 0.6);
+            background: rgba(59, 130, 246, 0.6);
         }
 
         .twinkling-stars .star:nth-child(4n) {
@@ -380,8 +692,17 @@
         }
 
         @keyframes twinkle {
-            0%, 100% { opacity: 0.3; transform: scale(1); }
-            50% { opacity: 1; transform: scale(1.3); }
+
+            0%,
+            100% {
+                opacity: 0.3;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(1.3);
+            }
         }
 
         @keyframes float {
@@ -389,6 +710,7 @@
                 transform: translate(0, 0);
                 opacity: 0.7;
             }
+
             100% {
                 transform: translate(100vw, 100vh);
                 opacity: 0;
@@ -412,16 +734,15 @@
         }
 
         .level-info {
-            background: linear-gradient(135deg, 
-                rgba(255, 255, 255, 0.05) 0%, 
-                rgba(18, 23, 38, 0.9) 100%
-            );
+            background: linear-gradient(135deg,
+                    rgba(255, 255, 255, 0.05) 0%,
+                    rgba(18, 23, 38, 0.9) 100%);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border-radius: 12px;
             padding: 20px 32px;
             border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 
+            box-shadow:
                 0 8px 24px var(--shadow),
                 inset 0 1px 1px rgba(255, 255, 255, 0.05);
             margin-bottom: 24px;
@@ -431,7 +752,7 @@
         }
 
         .level-info:hover {
-            box-shadow: 
+            box-shadow:
                 0 12px 32px var(--shadow),
                 0 0 20px var(--glow);
             transform: translateY(-2px);
@@ -444,11 +765,10 @@
             left: 0;
             right: 0;
             height: 2px;
-            background: linear-gradient(90deg, 
-                transparent, 
-                var(--accent), 
-                transparent
-            );
+            background: linear-gradient(90deg,
+                    transparent,
+                    var(--accent),
+                    transparent);
         }
 
         .level-text {
@@ -464,12 +784,11 @@
         }
 
         .game-container {
-            max-width: 900px; /* Increased for desktop */
+            max-width: 900px;
             width: 100%;
             margin: 0 auto;
         }
 
-        /* Desktop-specific enhancements */
         @media (min-width: 1024px) {
             .game-container {
                 max-width: 1100px;
@@ -542,19 +861,18 @@
 
         #grid {
             display: grid;
-            gap: 3px; /* Reduced gap for tighter puzzle look */
-            aspect-ratio: var(--grid-aspect); /* Set dynamically */
+            gap: 3px;
+            aspect-ratio: var(--grid-aspect);
             margin: 24px auto;
-            background: linear-gradient(135deg, 
-                rgba(18, 23, 38, 0.8) 0%, 
-                rgba(12, 16, 28, 0.9) 100%
-            );
+            background: linear-gradient(135deg,
+                    rgba(18, 23, 38, 0.8) 0%,
+                    rgba(12, 16, 28, 0.9) 100%);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
             border-radius: 16px;
-            padding: 15px; /* Reduced padding */
+            padding: 15px;
             border: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: 
+            box-shadow:
                 0 16px 48px var(--shadow),
                 inset 0 1px 1px rgba(255, 255, 255, 0.05);
             position: relative;
@@ -562,16 +880,39 @@
             transition: all 0.3s ease;
         }
 
-        /* Enhanced desktop grid */
+        #grid.completed {
+            display: block;
+            gap: 0;
+            padding: 0;
+            border: none;
+            background: none;
+            box-shadow: none;
+            animation: imageAppear 1s ease-out;
+        }
+
+        @keyframes imageAppear {
+            0% {
+                opacity: 0;
+                transform: scale(0.95);
+                filter: blur(4px);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1);
+                filter: blur(0);
+            }
+        }
+
         @media (min-width: 1024px) {
             #grid {
-                gap: 4px; /* Still reduced for desktop */
+                gap: 4px;
                 padding: 18px;
                 margin: 32px 0;
             }
 
             #grid:hover {
-                box-shadow: 
+                box-shadow:
                     0 20px 60px var(--shadow),
                     0 0 24px var(--glow),
                     inset 0 1px 1px rgba(255, 255, 255, 0.08);
@@ -586,13 +927,13 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: radial-gradient(circle at 50% 50%, rgba(124, 58, 237, 0.1), transparent 50%);
+            background: radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.1), transparent 50%);
             border-radius: 16px;
             pointer-events: none;
             z-index: 0;
         }
 
-        #grid > * {
+        #grid>* {
             position: relative;
             z-index: 1;
         }
@@ -601,23 +942,21 @@
             aspect-ratio: 1;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border-radius: 10px; /* Slightly larger radius */
+            border-radius: 10px;
             overflow: hidden;
             position: relative;
-            background: linear-gradient(135deg, 
-                rgba(255, 255, 255, 0.05) 0%, 
-                rgba(18, 23, 38, 0.9) 100%
-            );
+            background: linear-gradient(135deg,
+                    rgba(255, 255, 255, 0.05) 0%,
+                    rgba(18, 23, 38, 0.9) 100%);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 
+            box-shadow:
                 0 4px 12px var(--shadow),
                 inset 0 1px 1px rgba(255, 255, 255, 0.05);
             animation: pulse 3s ease-in-out infinite;
         }
 
-        /* Enhanced desktop puzzle piece interactions */
         @media (min-width: 1024px) {
             .puzzle-piece {
                 border-radius: 12px;
@@ -626,14 +965,13 @@
 
             .puzzle-piece:hover {
                 transform: scale(1.08) translateY(-4px) rotateY(5deg);
-                box-shadow: 
+                box-shadow:
                     0 16px 32px var(--shadow),
                     0 0 20px var(--glow);
                 border-color: var(--accent);
-                background: linear-gradient(135deg, 
-                    rgba(124, 58, 237, 0.2) 0%, 
-                    rgba(18, 23, 38, 0.9) 100%
-                );
+                background: linear-gradient(135deg,
+                        rgba(59, 130, 246, 0.2) 0%,
+                        rgba(18, 23, 38, 0.9) 100%);
                 z-index: 10;
             }
 
@@ -642,17 +980,15 @@
                 transition: all 0.1s ease;
             }
 
-            /* Keyboard navigation support */
             .puzzle-piece:focus {
                 outline: 2px solid var(--accent);
                 outline-offset: 2px;
                 transform: scale(1.05);
-                box-shadow: 
+                box-shadow:
                     0 12px 24px var(--shadow),
                     0 0 16px var(--glow);
             }
 
-            /* Enhanced completion message for desktop */
             .completion-message {
                 max-width: 800px;
                 padding: 32px 40px;
@@ -669,13 +1005,16 @@
         }
 
         @keyframes pulse {
-            0%, 100% {
-                box-shadow: 
+
+            0%,
+            100% {
+                box-shadow:
                     0 4px 12px var(--shadow),
                     0 0 8px var(--glow);
             }
+
             50% {
-                box-shadow: 
+                box-shadow:
                     0 4px 12px var(--shadow),
                     0 0 12px var(--glow);
             }
@@ -683,33 +1022,25 @@
 
         .puzzle-piece:hover {
             transform: scale(1.05) translateY(-3px);
-            box-shadow: 
+            box-shadow:
                 0 12px 24px var(--shadow),
                 0 0 16px var(--glow);
             border-color: var(--accent);
-            background: linear-gradient(135deg, 
-                rgba(124, 58, 237, 0.15) 0%, 
-                rgba(18, 23, 38, 0.9) 100%
-            );
+            background: linear-gradient(135deg,
+                    rgba(59, 130, 246, 0.15) 0%,
+                    rgba(18, 23, 38, 0.9) 100%);
         }
 
         .puzzle-piece.revealed {
-            background: linear-gradient(135deg, 
-                rgba(124, 58, 237, 0.2) 0%, 
-                rgba(16, 185, 129, 0.15) 100%
-            );
-            border-color: var(--accent);
-            box-shadow: 
-                0 8px 20px var(--shadow),
-                0 0 12px var(--glow);
+            background: none;
+            border: none;
+            box-shadow: none;
             animation: none;
         }
 
         .puzzle-piece.revealed:hover {
-            transform: scale(1.03) translateY(-2px);
-            box-shadow: 
-                0 12px 28px var(--shadow),
-                0 0 16px var(--glow);
+            transform: none;
+            box-shadow: none;
         }
 
         .piece-number {
@@ -729,7 +1060,6 @@
             user-select: none;
         }
 
-        /* Enhanced desktop piece numbers */
         @media (min-width: 1024px) {
             .piece-number {
                 font-size: 20px;
@@ -755,10 +1085,9 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, 
-                rgba(10, 14, 26, 0.95) 0%, 
-                rgba(18, 23, 38, 0.9) 100%
-            );
+            background: linear-gradient(135deg,
+                    rgba(10, 14, 26, 0.95) 0%,
+                    rgba(18, 23, 38, 0.9) 100%);
             backdrop-filter: blur(6px);
             -webkit-backdrop-filter: blur(6px);
             display: flex;
@@ -786,10 +1115,9 @@
         }
 
         .btn {
-            background: linear-gradient(135deg, 
-                var(--accent) 0%, 
-                var(--accent-secondary) 100%
-            );
+            background: linear-gradient(135deg,
+                    var(--accent) 0%,
+                    var(--accent-secondary) 100%);
             border: none;
             padding: 12px 24px;
             border-radius: 10px;
@@ -801,13 +1129,12 @@
             font-family: 'Inter', sans-serif;
             position: relative;
             overflow: hidden;
-            box-shadow: 
+            box-shadow:
                 0 4px 12px var(--shadow),
                 inset 0 1px 1px rgba(255, 255, 255, 0.1);
             user-select: none;
         }
 
-        /* Enhanced desktop button interactions */
         @media (min-width: 1024px) {
             .btn {
                 font-size: 16px;
@@ -821,7 +1148,7 @@
 
             .btn:focus:not(:hover) {
                 transform: translateY(-1px);
-                box-shadow: 
+                box-shadow:
                     0 6px 16px var(--shadow),
                     0 0 8px var(--glow);
             }
@@ -834,11 +1161,10 @@
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, 
-                transparent, 
-                rgba(255, 255, 255, 0.15), 
-                transparent
-            );
+            background: linear-gradient(90deg,
+                    transparent,
+                    rgba(255, 255, 255, 0.15),
+                    transparent);
             transition: left 0.4s ease;
         }
 
@@ -848,32 +1174,30 @@
 
         .btn:hover {
             transform: translateY(-2px);
-            box-shadow: 
+            box-shadow:
                 0 8px 20px var(--shadow),
                 0 0 12px var(--glow);
-            background: linear-gradient(135deg, 
-                var(--accent) 0%, 
-                var(--accent-secondary) 80%
-            );
+            background: linear-gradient(135deg,
+                    var(--accent) 0%,
+                    var(--accent-secondary) 80%);
         }
 
         .btn:active {
             transform: translateY(0);
-            box-shadow: 
+            box-shadow:
                 0 4px 12px var(--shadow),
                 inset 0 1px 1px rgba(255, 255, 255, 0.1);
         }
 
         .btn.secondary {
-            background: linear-gradient(135deg, 
-                rgba(255, 255, 255, 0.05) 0%, 
-                rgba(18, 23, 38, 0.9) 100%
-            );
+            background: linear-gradient(135deg,
+                    rgba(255, 255, 255, 0.05) 0%,
+                    rgba(18, 23, 38, 0.9) 100%);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             color: rgba(255, 255, 255, 0.7);
             border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 
+            box-shadow:
                 0 4px 12px var(--shadow),
                 inset 0 1px 1px rgba(255, 255, 255, 0.05);
         }
@@ -881,16 +1205,15 @@
         .btn.secondary:hover {
             color: var(--text);
             border-color: var(--accent);
-            box-shadow: 
+            box-shadow:
                 0 8px 20px var(--shadow),
                 0 0 12px var(--glow);
         }
 
         .btn:disabled {
-            background: linear-gradient(135deg, 
-                rgba(255, 255, 255, 0.05) 0%, 
-                rgba(18, 23, 38, 0.9) 100%
-            );
+            background: linear-gradient(135deg,
+                    rgba(255, 255, 255, 0.05) 0%,
+                    rgba(18, 23, 38, 0.9) 100%);
             color: rgba(255, 255, 255, 0.4);
             cursor: not-allowed;
             box-shadow: none;
@@ -911,10 +1234,9 @@
         }
 
         .stat-item {
-            background: linear-gradient(135deg, 
-                rgba(255, 255, 255, 0.05) 0%, 
-                rgba(18, 23, 38, 0.9) 100%
-            );
+            background: linear-gradient(135deg,
+                    rgba(255, 255, 255, 0.05) 0%,
+                    rgba(18, 23, 38, 0.9) 100%);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             padding: 14px 20px;
@@ -923,7 +1245,7 @@
             text-align: center;
             min-width: 100px;
             transition: all 0.3s ease;
-            box-shadow: 
+            box-shadow:
                 0 4px 12px var(--shadow),
                 inset 0 1px 1px rgba(255, 255, 255, 0.05);
             position: relative;
@@ -937,16 +1259,15 @@
             left: 0;
             right: 0;
             height: 2px;
-            background: linear-gradient(90deg, 
-                transparent, 
-                var(--accent), 
-                transparent
-            );
+            background: linear-gradient(90deg,
+                    transparent,
+                    var(--accent),
+                    transparent);
         }
 
         .stat-item:hover {
             transform: translateY(-2px);
-            box-shadow: 
+            box-shadow:
                 0 8px 20px var(--shadow),
                 0 0 12px var(--glow);
             border-color: var(--accent);
@@ -965,10 +1286,9 @@
         }
 
         .completion-message {
-            background: linear-gradient(135deg, 
-                rgba(124, 58, 237, 0.2) 0%, 
-                rgba(16, 185, 129, 0.15) 100%
-            );
+            background: linear-gradient(135deg,
+                    rgba(59, 130, 246, 0.2) 0%,
+                    rgba(16, 185, 129, 0.15) 100%);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border: 1px solid var(--accent);
@@ -977,7 +1297,7 @@
             margin: 24px auto;
             text-align: center;
             display: none;
-            box-shadow: 
+            box-shadow:
                 0 12px 32px var(--shadow),
                 0 0 16px var(--glow);
             position: relative;
@@ -992,11 +1312,10 @@
             left: 0;
             right: 0;
             height: 2px;
-            background: linear-gradient(90deg, 
-                transparent, 
-                var(--accent), 
-                transparent
-            );
+            background: linear-gradient(90deg,
+                    transparent,
+                    var(--accent),
+                    transparent);
         }
 
         .completion-message.show {
@@ -1011,6 +1330,7 @@
                 backdrop-filter: blur(4px);
                 -webkit-backdrop-filter: blur(4px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0) scale(1);
@@ -1023,12 +1343,14 @@
             0% {
                 transform: scale(1);
             }
+
             50% {
                 transform: scale(1.08);
-                box-shadow: 
+                box-shadow:
                     0 0 20px var(--glow),
                     0 8px 24px var(--shadow);
             }
+
             100% {
                 transform: scale(1);
             }
@@ -1070,7 +1392,7 @@
             }
 
             #grid {
-                gap: 2px; /* Even tighter for mobile */
+                gap: 2px;
                 padding: 10px;
                 border-radius: 12px;
             }
@@ -1099,7 +1421,7 @@
             }
 
             #grid {
-                gap: 2px; /* Minimal spacing for smallest screens */
+                gap: 2px;
                 padding: 8px;
                 border-radius: 10px;
             }
@@ -1119,11 +1441,9 @@
         }
     </style>
 </head>
+
 <body>
-    <!-- Enhanced Cosmic Background Animation System -->
-    <!-- Enhanced Cosmic Background with Moving Debris -->
     <div class="cosmic-background">
-        <!-- Cosmic Space Debris -->
         <div class="debris">
             <span style="left: 5%; top: 15%; animation-delay: 0s;"></span>
             <span style="left: 25%; top: 45%; animation-delay: 2s;"></span>
@@ -1144,24 +1464,14 @@
             <span style="left: 70%; top: 5%; animation-delay: 32s;"></span>
             <span style="left: 40%; top: 85%; animation-delay: 34s;"></span>
         </div>
-
-        <!-- Cosmic Dust Clouds -->
         <div class="cosmic-dust dust1"></div>
         <div class="cosmic-dust dust2"></div>
         <div class="cosmic-dust dust3"></div>
-
-        <!-- Spinning Earth -->
         <div class="earth"></div>
-
-        <!-- Satellite -->
         <div class="satellite"></div>
-
-        <!-- Shooting Stars -->
         <div class="shooting-star star1"></div>
         <div class="shooting-star star2"></div>
         <div class="shooting-star star3"></div>
-
-        <!-- Twinkling Stars -->
         <div class="twinkling-stars">
             <div class="star" style="top: 10%; left: 15%;"></div>
             <div class="star" style="top: 25%; left: 80%;"></div>
@@ -1182,7 +1492,7 @@
     </div>
 
     <div class="header">
-        <h1>🌌 Cosmic Quiz</h1>
+        <h1>🌌 Cosmic Quiz - Picture Round</h1>
         <div class="level-info">
             <div class="level-text" id="level-text">Star System 1</div>
             <div class="progress" id="progress-text">0 / 0 sectors explored</div>
@@ -1193,7 +1503,6 @@
         <div class="main-layout">
             <div class="game-section">
                 <div id="grid"></div>
-                
                 <div class="completion-message" id="completion-message">
                     <h3>🌟 Star System Conquered!</h3>
                     <p>Well done, explorer! You've uncovered all sectors of this system.</p>
@@ -1207,6 +1516,7 @@
                     <button class="btn secondary" onclick="revealFullImage()">👁️ Reveal Image</button>
                     <button class="btn secondary" onclick="resetLevel()">🔄 Reset</button>
                     <button class="btn" onclick="nextLevel()">➡️ Next Level</button>
+                    <button class="btn secondary" onclick="toggleTheme()">🌓 Toggle Theme</button>
                 </div>
 
                 <div class="stats">
@@ -1228,23 +1538,21 @@
     </div>
 
     <script>
-        // IndexedDB Database Management
         let db = null;
         const DB_NAME = 'CosmicQuizDB';
         const DB_VERSION = 1;
         const STORE_NAME = 'images';
 
-        // Initialize IndexedDB
         function initDB() {
             return new Promise((resolve, reject) => {
                 const request = indexedDB.open(DB_NAME, DB_VERSION);
-                
+
                 request.onerror = () => reject(request.error);
                 request.onsuccess = () => {
                     db = request.result;
                     resolve(db);
                 };
-                
+
                 request.onupgradeneeded = (event) => {
                     const database = event.target.result;
                     if (!database.objectStoreNames.contains(STORE_NAME)) {
@@ -1254,35 +1562,33 @@
             });
         }
 
-        // Store image in IndexedDB
         function storeImage(level, imageData) {
             return new Promise((resolve, reject) => {
                 if (!db) {
                     reject(new Error('Database not initialized'));
                     return;
                 }
-                
+
                 const transaction = db.transaction([STORE_NAME], 'readwrite');
                 const store = transaction.objectStore(STORE_NAME);
                 const request = store.put({ level: level, data: imageData });
-                
+
                 request.onsuccess = () => resolve();
                 request.onerror = () => reject(request.error);
             });
         }
 
-        // Get image from IndexedDB
         function getImage(level) {
             return new Promise((resolve, reject) => {
                 if (!db) {
                     reject(new Error('Database not initialized'));
                     return;
                 }
-                
+
                 const transaction = db.transaction([STORE_NAME], 'readonly');
                 const store = transaction.objectStore(STORE_NAME);
                 const request = store.get(level);
-                
+
                 request.onsuccess = () => {
                     const result = request.result;
                     resolve(result ? result.data : null);
@@ -1291,29 +1597,26 @@
             });
         }
 
-        // Delete image from IndexedDB
         function deleteImage(level) {
             return new Promise((resolve, reject) => {
                 if (!db) {
                     reject(new Error('Database not initialized'));
                     return;
                 }
-                
+
                 const transaction = db.transaction([STORE_NAME], 'readwrite');
                 const store = transaction.objectStore(STORE_NAME);
                 const request = store.delete(level);
-                
+
                 request.onsuccess = () => resolve();
                 request.onerror = () => reject(request.error);
             });
         }
 
-        // Global variables for grid dimensions
-        const GRID_WIDTH = 5; // Number of columns
-        const GRID_HEIGHT = 5; // Number of rows
+        const GRID_WIDTH = 5;
+        const GRID_HEIGHT = 5;
         const TOTAL_PIECES = GRID_WIDTH * GRID_HEIGHT;
 
-        // Set grid aspect ratio in CSS
         document.documentElement.style.setProperty('--grid-aspect', GRID_WIDTH / GRID_HEIGHT);
 
         let currentLevel = parseInt(localStorage.getItem('currentLevel') || '1');
@@ -1325,18 +1628,18 @@
 
         async function loadLevel() {
             document.getElementById('level-text').textContent = `Star System ${currentLevel}`;
-            
+
             try {
                 imgData = await getImage(`level${currentLevel}`);
             } catch (error) {
                 console.error('Error loading image:', error);
                 imgData = null;
             }
-            
+
             revealedPieces = [];
             hintsUsed = 0;
             startTime = Date.now();
-            
+
             if (!imgData) {
                 document.getElementById('grid').innerHTML = `
                     <div style="grid-column: span ${GRID_WIDTH}; text-align: center; padding: 40px; color: rgba(255, 255, 255, 0.6);">
@@ -1344,14 +1647,15 @@
                         <p>Please upload an image in the mission control panel</p>
                     </div>
                 `;
+                document.getElementById('grid').classList.remove('completed');
                 document.getElementById('previous-btn').disabled = currentLevel === 1;
                 return;
             }
-            
+
             createGrid();
             updateStats();
             startTimer();
-            // Completion message removed - no longer needed
+            document.getElementById('completion-message').classList.remove('show');
             document.getElementById('previous-btn').disabled = currentLevel === 1;
         }
 
@@ -1359,7 +1663,13 @@
             const grid = document.getElementById('grid');
             grid.style.gridTemplateColumns = `repeat(${GRID_WIDTH}, 1fr)`;
             grid.innerHTML = '';
-            
+            grid.classList.remove('completed');
+
+            if (revealedPieces.length === TOTAL_PIECES) {
+                displayFullImage();
+                return;
+            }
+
             for (let i = 0; i < TOTAL_PIECES; i++) {
                 const row = Math.floor(i / GRID_WIDTH);
                 const col = i % GRID_WIDTH;
@@ -1368,118 +1678,57 @@
             }
         }
 
+        function displayFullImage() {
+            const grid = document.getElementById('grid');
+            grid.classList.add('completed');
+            grid.innerHTML = `<img src="${imgData}" style="width: 100%; height: 100%; object-fit: contain;">`;
+        }
+
         function createPuzzlePiece(index, row, col) {
             const piece = document.createElement('div');
             piece.className = 'puzzle-piece';
             piece.dataset.index = index;
-            
+
             const svgNS = "http://www.w3.org/2000/svg";
             const svg = document.createElementNS(svgNS, "svg");
             svg.setAttribute("viewBox", "0 0 100 100");
             svg.style.display = 'none';
-            
-            const clipPathId = `clip${index}`;
-            const defs = document.createElementNS(svgNS, "defs");
-            const clipPath = document.createElementNS(svgNS, "clipPath");
-            clipPath.setAttribute("id", clipPathId);
-            
-            const path = document.createElementNS(svgNS, "path");
-            path.setAttribute("d", getPuzzlePath(row, col));
-            clipPath.appendChild(path);
-            defs.appendChild(clipPath);
-            svg.appendChild(defs);
-            
+
             const image = document.createElementNS(svgNS, "image");
             image.setAttribute("href", imgData);
             image.setAttribute("width", `${GRID_WIDTH * 100}`);
             image.setAttribute("height", `${GRID_HEIGHT * 100}`);
             image.setAttribute("x", -col * 100);
             image.setAttribute("y", -row * 100);
-            image.setAttribute("clip-path", `url(#${clipPathId})`);
             image.setAttribute("preserveAspectRatio", "xMidYMid slice");
             svg.appendChild(image);
-            
+
             const overlay = document.createElement('div');
             overlay.className = 'hidden-overlay';
-            
+
             const number = document.createElement('div');
             number.className = 'piece-number';
             number.textContent = index + 1;
             overlay.appendChild(number);
-            
+
             piece.appendChild(svg);
             piece.appendChild(overlay);
-            
-            piece.addEventListener('click', () => revealPiece(piece, index));
-            
-            return piece;
-        }
 
-        function getPuzzlePath(row, col) {
-            const knobSize = 15;
-            let path = "M0,0 ";
-            
-            // Top edge
-            if (row > 0) {
-                const knobOut = (row + col) % 2 === 0;
-                if (knobOut) {
-                    path += `L${40-knobSize},0 Q${40-knobSize},${-knobSize} ${40},${-knobSize} Q${40+knobSize},${-knobSize} ${40+knobSize},0 L100,0 `;
-                } else {
-                    path += `L${40-knobSize},0 Q${40-knobSize},${knobSize} ${40},${knobSize} Q${40+knobSize},${knobSize} ${40+knobSize},0 L100,0 `;
-                }
-            } else {
-                path += "L100,0 ";
-            }
-            
-            // Right edge
-            if (col < GRID_WIDTH - 1) {
-                const knobOut = (row + col + 1) % 2 === 0;
-                if (knobOut) {
-                    path += `L100,${40-knobSize} Q${100+knobSize},${40-knobSize} ${100+knobSize},${40} Q${100+knobSize},${40+knobSize} 100,${40+knobSize} L100,100 `;
-                } else {
-                    path += `L100,${40-knobSize} Q${100-knobSize},${40-knobSize} ${100-knobSize},${40} Q${100-knobSize},${40+knobSize} 100,${40+knobSize} L100,100 `;
-                }
-            } else {
-                path += "L100,100 ";
-            }
-            
-            // Bottom edge
-            if (row < GRID_HEIGHT - 1) {
-                const knobOut = (row + col + 2) % 2 === 0;
-                if (knobOut) {
-                    path += `L${40+knobSize},100 Q${40+knobSize},${100+knobSize} ${40},${100+knobSize} Q${40-knobSize},${100+knobSize} ${40-knobSize},100 L0,100 `;
-                } else {
-                    path += `L${40+knobSize},100 Q${40+knobSize},${100-knobSize} ${40},${100-knobSize} Q${40-knobSize},${100-knobSize} ${40-knobSize},100 L0,100 `;
-                }
-            } else {
-                path += "L0,100 ";
-            }
-            
-            // Left edge
-            if (col > 0) {
-                const knobOut = (row + col + 3) % 2 === 0;
-                if (knobOut) {
-                    path += `L0,${40+knobSize} Q${-knobSize},${40+knobSize} ${-knobSize},${40} Q${-knobSize},${40-knobSize} 0,${40-knobSize} Z`;
-                } else {
-                    path += `L0,${40+knobSize} Q${knobSize},${40+knobSize} ${knobSize},${40} Q${knobSize},${40-knobSize} 0,${40-knobSize} Z`;
-                }
-            } else {
-                path += "L0,0 Z";
-            }
-            
-            return path;
+            piece.addEventListener('click', () => revealPiece(piece, index));
+
+            return piece;
         }
 
         function revealPiece(piece, index) {
             if (revealedPieces.includes(index)) return;
-            
+
             const overlay = piece.querySelector('.hidden-overlay');
             const svg = piece.querySelector('svg');
             const number = piece.querySelector('.piece-number');
-            
+
             number.classList.add('fade-out');
             overlay.classList.add('revealing');
-            
+
             setTimeout(() => {
                 if (svg) {
                     svg.style.display = 'block';
@@ -1489,19 +1738,20 @@
                 }
                 piece.classList.add('revealed');
             }, 300);
-            
+
             revealedPieces.push(index);
             updateStats();
-            
+
             piece.style.animation = 'revealSuccess 0.6s ease-out';
             setTimeout(() => {
                 piece.style.animation = '';
             }, 600);
-            
+
             if (revealedPieces.length === TOTAL_PIECES) {
                 setTimeout(() => {
                     stopTimer();
-                    // Completion message removed - puzzle just completes silently
+                    displayFullImage();
+                    document.getElementById('completion-message').classList.add('show');
                 }, 500);
             }
         }
@@ -1513,12 +1763,12 @@
                     hiddenPieces.push(i);
                 }
             }
-            
+
             if (hiddenPieces.length === 0) return;
-            
+
             const randomIndex = hiddenPieces[Math.floor(Math.random() * hiddenPieces.length)];
             const piece = document.querySelector(`[data-index="${randomIndex}"]`);
-            
+
             hintsUsed++;
             revealPiece(piece, randomIndex);
         }
@@ -1528,27 +1778,20 @@
                 alert('❌ No image data available for this level');
                 return;
             }
-            
-            const confirmed = confirm('🔍 Are you sure you want to reveal the full image?\n\nThis will show the complete puzzle solution.');
-            
-            if (confirmed) {
-                // Reveal all remaining pieces
-                for (let i = 0; i < TOTAL_PIECES; i++) {
-                    if (!revealedPieces.includes(i)) {
-                        const piece = document.querySelector(`[data-index="${i}"]`);
-                        if (piece) {
-                            // Add a slight delay for visual effect
-                            setTimeout(() => {
-                                revealPiece(piece, i);
-                            }, i * 50); // Stagger the reveals
-                        }
+
+            for (let i = 0; i < TOTAL_PIECES; i++) {
+                if (!revealedPieces.includes(i)) {
+                    const piece = document.querySelector(`[data-index="${i}"]`);
+                    if (piece) {
+                        setTimeout(() => {
+                            revealPiece(piece, i);
+                        }, i * 50);
                     }
                 }
-                
-                // Count this as using multiple hints
-                hintsUsed += (TOTAL_PIECES - revealedPieces.length);
-                updateStats();
             }
+
+            hintsUsed += (TOTAL_PIECES - revealedPieces.length);
+            updateStats();
         }
 
         function resetLevel() {
@@ -1558,7 +1801,7 @@
             createGrid();
             updateStats();
             startTimer();
-            // Completion message removed - no need to hide it
+            document.getElementById('completion-message').classList.remove('show');
         }
 
         async function nextLevel() {
@@ -1600,24 +1843,27 @@
             }
         }
 
-        // Enhanced keyboard navigation for desktop
+        function toggleTheme() {
+            document.body.classList.toggle('light-theme');
+            localStorage.setItem('theme', document.body.classList.contains('light-theme') ? 'light' : 'dark');
+        }
+
         document.addEventListener('keydown', (e) => {
-            if (e.target.tagName === 'BUTTON') return; // Don't interfere with button navigation
-            
+            if (e.target.tagName === 'BUTTON') return;
+
             const pieces = document.querySelectorAll('.puzzle-piece');
             const focusedElement = document.activeElement;
             let currentIndex = -1;
-            
-            // Find currently focused piece
+
             pieces.forEach((piece, index) => {
                 if (piece === focusedElement) {
                     currentIndex = index;
                 }
             });
-            
+
             let newIndex = currentIndex;
-            
-            switch(e.key) {
+
+            switch (e.key) {
                 case 'ArrowLeft':
                     e.preventDefault();
                     newIndex = Math.max(0, currentIndex - 1);
@@ -1662,13 +1908,11 @@
                     previousLevel();
                     break;
             }
-            
-            // Focus the new piece
+
             if (newIndex !== currentIndex && pieces[newIndex]) {
                 pieces[newIndex].focus();
                 pieces[newIndex].setAttribute('tabindex', '0');
-                
-                // Remove tabindex from other pieces
+
                 pieces.forEach((piece, index) => {
                     if (index !== newIndex) {
                         piece.setAttribute('tabindex', '-1');
@@ -1677,7 +1921,6 @@
             }
         });
 
-        // Make puzzle pieces focusable
         function makeGridFocusable() {
             const pieces = document.querySelectorAll('.puzzle-piece');
             pieces.forEach((piece, index) => {
@@ -1685,19 +1928,21 @@
             });
         }
 
-        // Initialize the game with IndexedDB
         async function initGame() {
             try {
                 await initDB();
                 await loadLevel();
-                
-                // Set up keyboard navigation after grid is created
+
                 setTimeout(() => {
                     makeGridFocusable();
                 }, 100);
+
+                const savedTheme = localStorage.getItem('theme');
+                if (savedTheme === 'light') {
+                    document.body.classList.add('light-theme');
+                }
             } catch (error) {
                 console.error('Failed to initialize game:', error);
-                // Fallback to show error message
                 document.getElementById('grid').innerHTML = `
                     <div style="grid-column: span ${GRID_WIDTH}; text-align: center; padding: 40px; color: rgba(255, 107, 107, 0.8);">
                         <h3>⚠️ Database Error</h3>
@@ -1707,8 +1952,8 @@
             }
         }
 
-        // Start the game
         initGame();
     </script>
 </body>
+
 </html>
