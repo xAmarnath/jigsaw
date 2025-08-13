@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
+        /* Existing styles remain unchanged */
         :root {
             --bg: #f8fafc;
             --card: #ffffff;
@@ -335,6 +336,32 @@
             }
         }
 
+        /* New styles for PiP button and video */
+        .pip-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Roboto', sans-serif;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 4px 8px var(--shadow);
+            z-index: 100;
+        }
+
+        .pip-button:hover {
+            background: var(--accent-secondary);
+            transform: scale(1.05);
+        }
+
+        video {
+            display: none; /* Hidden video element for PiP */
+        }
+
         @media (max-width: 768px) {
             body {
                 padding: 16px;
@@ -366,6 +393,11 @@
                 width: 50px;
                 height: 15px;
             }
+
+            .pip-button {
+                padding: 8px 16px;
+                font-size: 14px;
+            }
         }
 
         @media (max-width: 480px) {
@@ -394,6 +426,11 @@
             .pixel-cloud {
                 width: 40px;
                 height: 12px;
+            }
+
+            .pip-button {
+                padding: 6px 12px;
+                font-size: 12px;
             }
         }
     </style>
@@ -424,13 +461,17 @@
         </div>
     </div>
 
+    <button class="pip-button" id="pipButton">Enter PiP Mode</button>
+
     <div class="header">
         <h1>🎮 Quiz Final Leaderboard</h1>
     </div>
 
-    <div class="game-container">
+    <div class="game-container" id="captureArea">
         <div class="leaderboard" id="leaderboard"></div>
     </div>
+
+    <video id="pipVideo" autoplay muted></video>
 
     <script>
         const BLOB_URL = 'https://jsonblob.com/api/jsonBlob/1405072885638422528';
@@ -490,6 +531,9 @@
                 `;
                 leaderboard.appendChild(card);
             });
+
+            // Update the canvas for PiP
+            updateCanvas();
         }
 
         function triggerConfetti() {
@@ -499,6 +543,80 @@
                 setTimeout(() => confetti.style.display = 'none', 2500);
             }
         }
+
+        // PiP functionality
+        const video = document.getElementById('pipVideo');
+        const pipButton = document.getElementById('pipButton');
+        const captureArea = document.getElementById('captureArea');
+        let canvas, stream;
+
+        async function startPiP() {
+            if (!document.pictureInPictureEnabled) {
+                alert('Picture-in-Picture is not supported in this browser.');
+                return;
+            }
+
+            try {
+                // Create a canvas to capture the leaderboard area
+                canvas = document.createElement('canvas');
+                canvas.width = 800; // Adjust based on your needs
+                canvas.height = 600; // Adjust based on your needs
+                const ctx = canvas.getContext('2d');
+
+                // Start capturing the captureArea
+                stream = canvas.captureStream(30); // 30 FPS
+                video.srcObject = stream;
+
+                // Request PiP
+                if (document.pictureInPictureElement) {
+                    await document.exitPictureInPicture();
+                }
+                await video.requestPictureInPicture();
+                pipButton.textContent = 'Exit PiP Mode';
+            } catch (error) {
+                console.error('Error entering PiP mode:', error);
+                alert('Failed to enter PiP mode.');
+            }
+        }
+
+        function updateCanvas() {
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // Draw the captureArea (leaderboard) onto the canvas
+            // This is a simplified approach; for better quality, you might need a library like html2canvas
+            ctx.fillStyle = '#f8fafc';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.font = '24px "Press Start 2P"';
+            ctx.fillStyle = '#1f2937';
+            ctx.fillText('Leaderboard Snapshot', 20, 50);
+            // Note: For accurate rendering, use html2canvas or similar to capture the DOM
+            const leaderboard = document.getElementById('leaderboard');
+            if (leaderboard) {
+                ctx.fillText(leaderboard.innerText.substring(0, 100), 20, 100); // Simplified text rendering
+            }
+        }
+
+        pipButton.addEventListener('click', async () => {
+            if (document.pictureInPictureElement) {
+                await document.exitPictureInPicture();
+                pipButton.textContent = 'Enter PiP Mode';
+            } else {
+                await startPiP();
+            }
+        });
+
+        video.addEventListener('enterpictureinpicture', () => {
+            pipButton.textContent = 'Exit PiP Mode';
+        });
+
+        video.addEventListener('leavepictureinpicture', () => {
+            pipButton.textContent = 'Enter PiP Mode';
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+        });
 
         document.addEventListener('DOMContentLoaded', () => {
             loadLeaderboard();
