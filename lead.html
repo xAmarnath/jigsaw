@@ -354,7 +354,7 @@
             }
         }
 
-        #pipCanvas {
+        #pipCanvas, #pipVideo {
             display: none;
         }
 
@@ -465,12 +465,14 @@
         <button class="pip-button" id="pipButton">Toggle Picture-in-Picture</button>
         <div class="leaderboard" id="leaderboard"></div>
         <canvas id="pipCanvas" width="300" height="200"></canvas>
+        <video id="pipVideo" autoplay muted playsinline></video>
     </div>
 
     <script>
         const BLOB_URL = 'https://jsonblob.com/api/jsonBlob/1405072885638422528';
         let leaderboardData = { entries: [], version: 0 };
         let isPipActive = false;
+        let animationFrameId = null;
 
         async function fetchLeaderboard() {
             try {
@@ -515,36 +517,46 @@
         }
 
         async function enterPipMode() {
+            const video = document.getElementById('pipVideo');
             const canvas = document.getElementById('pipCanvas');
-            if (!canvas) return;
+            if (!video || !canvas) return;
 
             try {
                 if (document.pictureInPictureElement) {
                     await document.exitPictureInPicture();
                     isPipActive = false;
                     document.getElementById('pipButton').textContent = 'Toggle Picture-in-Picture';
-                    canvas.style.display = 'none';
+                    video.style.display = 'none';
+                    if (animationFrameId) {
+                        cancelAnimationFrame(animationFrameId);
+                        animationFrameId = null;
+                    }
                     return;
                 }
 
                 const ctx = canvas.getContext('2d');
                 drawLeaderboardOnCanvas(ctx, leaderboardData.entries);
 
-                await canvas.requestPictureInPicture();
+                // Capture canvas stream and assign to video
+                const stream = canvas.captureStream(30); // 30 FPS
+                video.srcObject = stream;
+
+                await video.requestPictureInPicture();
                 isPipActive = true;
                 document.getElementById('pipButton').textContent = 'Exit Picture-in-Picture';
-                canvas.style.display = 'block';
+                video.style.display = 'block';
 
                 function updatePipCanvas() {
                     if (isPipActive) {
                         drawLeaderboardOnCanvas(canvas.getContext('2d'), leaderboardData.entries);
-                        requestAnimationFrame(updatePipCanvas);
+                        animationFrameId = requestAnimationFrame(updatePipCanvas);
                     }
                 }
 
-                requestAnimationFrame(updatePipCanvas);
+                animationFrameId = requestAnimationFrame(updatePipCanvas);
             } catch (error) {
                 console.error('Error entering PiP mode:', error);
+                document.getElementById('pipButton').style.display = 'none';
             }
         }
 
@@ -598,7 +610,7 @@
             setInterval(loadLeaderboard, 2000);
 
             const pipButton = document.getElementById('pipButton');
-            if (pipButton && 'pictureInPictureEnabled' in document) {
+            if (pipButton && 'pictureInPictureEnabled' in document && HTMLCanvasElement.prototype.captureStream) {
                 pipButton.addEventListener('click', enterPipMode);
             } else {
                 pipButton.style.display = 'none';
