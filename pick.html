@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ISRO Quiz Team Allocation</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; font-family: 'Space Grotesk', sans-serif; overflow: hidden; color: #111; }
+
+    /* Background Video + Overlay */
+    #bgContainer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; }
+    #bgVideo {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      position: absolute; top: 0; left: 0;
+    }
+    #bgOverlay {
+      position: absolute; top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(255, 255, 255, 0.4);
+      z-index: -1;
+    }
+
+    .center-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100dvh;
+      padding: 30px;
+    }
+
+    #allocationContainer {
+      max-width: 760px;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(12px);
+      border-radius: 20px;
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
+      padding: 50px;
+      text-align: center;
+    }
+
+    #imagePlaceholder {
+      width: 150px; height: 150px; border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #111;
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
+      margin-bottom: 25px;
+    }
+
+    h1 {
+      font-size: 28px; font-weight: 700;
+      line-height: 1.4; margin-bottom: 30px;
+      color: #111;
+    }
+
+    #allocationList {
+      font-size: 20px; color: #444;
+      margin-bottom: 20px; font-weight: 600;
+      min-height: 100px;
+    }
+
+    button {
+      background-color: #2563eb; color: white;
+      border: none; padding: 14px 36px;
+      font-size: 18px; font-weight: 600;
+      border-radius: 10px; cursor: pointer;
+      margin: 12px 10px; transition: background 0.3s, transform 0.2s;
+      font-family: 'Space Grotesk', sans-serif;
+    }
+    button:hover:not(:disabled) { background-color: #1e3a8a; transform: translateY(-2px); }
+    button:disabled { background: #aaa; cursor: not-allowed; }
+  </style>
+</head>
+<body>
+  <div id="bgContainer">
+    <video id="bgVideo" muted autoplay loop playsinline>
+      <source src="https://envs.sh/dKh.mp4" type="video/mp4" />
+      Your browser doesn't support video.
+    </video>
+    <div id="bgOverlay"></div>
+  </div>
+
+  <div class="center-wrapper">
+    <div id="allocationContainer">
+      <img id="imagePlaceholder" src="https://envs.sh/dGy.jpg" alt="ISRO Logo" />
+      <h1>Team Set Allocation</h1>
+      <div id="allocationList">No teams allocated yet.</div>
+      <div>
+        <button class="teamBtn" data-team="Team 1">Allocate Team 1</button>
+        <button class="teamBtn" data-team="Team 2">Allocate Team 2</button>
+        <button class="teamBtn" data-team="Team 3">Allocate Team 3</button>
+        <button class="teamBtn" data-team="Team 4">Allocate Team 4</button>
+        <button class="teamBtn" data-team="Team 5">Allocate Team 5</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const teamButtons = document.querySelectorAll('.teamBtn');
+    const allocationList = document.getElementById('allocationList');
+    let availableSets = [101, 102, 103, 104, 105]; // Sets corresponding to 1-5
+    let allocations = [];
+
+    function updateAllocationDisplay() {
+      if (allocations.length === 0) {
+        allocationList.textContent = 'No teams allocated yet.';
+      } else {
+        allocationList.innerHTML = allocations.map(({ team, set }) => `${team}: Set ${set}`).join('<br>');
+      }
+    }
+
+    teamButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        if (availableSets.length === 0) {
+          allocationList.textContent = 'All sets have been allocated!';
+          teamButtons.forEach(btn => btn.disabled = true);
+          return;
+        }
+
+        // Pick a random set from availableSets
+        const randomIndex = Math.floor(Math.random() * availableSets.length);
+        const assignedSet = availableSets.splice(randomIndex, 1)[0];
+        const teamName = button.dataset.team;
+
+        // Store allocation
+        allocations.push({ team: teamName, set: assignedSet });
+
+        // Disable the clicked button
+        button.disabled = true;
+
+        // Update the display
+        updateAllocationDisplay();
+      });
+    });
+
+    window.addEventListener('load', () => {
+      const video = document.getElementById('bgVideo');
+      video.play().catch(e => console.warn('Autoplay blocked:', e));
+    });
+  </script>
+</body>
+</html>
