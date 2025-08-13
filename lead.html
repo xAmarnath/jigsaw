@@ -476,152 +476,176 @@
     <script>
         const BLOB_URL = 'https://jsonblob.com/api/jsonBlob/1405072885638422528';
 
-        async function fetchLeaderboard() {
-            try {
-                const response = await fetch(BLOB_URL, {
-                    method: 'GET',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                const data = await response.json();
-                // Ensure entries is an array
-                return {
-                    entries: Array.isArray(data.entries) ? data.entries : [],
-                    version: data.version || 0
-                };
-            } catch (error) {
-                console.error('Error fetching leaderboard:', error);
-                const localData = localStorage.getItem('leaderboard');
-                try {
-                    const parsed = JSON.parse(localData || '{"entries":[],"version":0}');
-                    return {
-                        entries: Array.isArray(parsed.entries) ? parsed.entries : [],
-                        version: parsed.version || 0
-                    };
-                } catch {
-                    return { entries: [], version: 0 };
-                }
-            }
+async function fetchLeaderboard() {
+    try {
+        const response = await fetch(BLOB_URL, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const data = await response.json();
+        // Ensure entries is an array
+        return {
+            entries: Array.isArray(data.entries) ? data.entries : [],
+            version: data.version || 0
+        };
+    } catch (error) {
+        console.error('Error fetching leaderboard:', error);
+        const localData = localStorage.getItem('leaderboard');
+        try {
+            const parsed = JSON.parse(localData || '{"entries":[],"version":0}');
+            return {
+                entries: Array.isArray(parsed.entries) ? parsed.entries : [],
+                version: parsed.version || 0
+            };
+        } catch {
+            return { entries: [], version: 0 };
+        }
+    }
+}
+
+async function loadLeaderboard() {
+    const { entries } = await fetchLeaderboard();
+    entries.sort((a, b) => b.score - a.score);
+    const leaderboard = document.getElementById('leaderboard');
+    if (!leaderboard) return;
+    leaderboard.innerHTML = '';
+
+    entries.slice(0, 5).forEach((entry, index) => {
+        const card = document.createElement('div');
+        let placeClass = '';
+        if (index === 0) {
+            placeClass = 'first';
+            triggerConfetti();
+        } else if (index === 1) {
+            placeClass = 'second';
+        } else if (index === 2) {
+            placeClass = 'third';
         }
 
-        async function loadLeaderboard() {
-            const { entries } = await fetchLeaderboard();
-            entries.sort((a, b) => b.score - a.score);
-            const leaderboard = document.getElementById('leaderboard');
-            if (!leaderboard) return;
-            leaderboard.innerHTML = '';
+        card.className = `leaderboard-card ${placeClass}`;
+        card.innerHTML = `
+            <div class="position">${index + 1}</div>
+            <div class="team-name">${entry.name.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
+            <div class="score">${entry.score}</div>
+        `;
+        leaderboard.appendChild(card);
+    });
 
-            entries.slice(0, 5).forEach((entry, index) => {
-                const card = document.createElement('div');
-                let placeClass = '';
-                if (index === 0) {
-                    placeClass = 'first';
-                    triggerConfetti();
-                } else if (index === 1) {
-                    placeClass = 'second';
-                } else if (index === 2) {
-                    placeClass = 'third';
-                }
+    // Update the canvas for PiP
+    updateCanvas();
+}
 
-                card.className = `leaderboard-card ${placeClass}`;
-                card.innerHTML = `
-                    <div class="position">${index + 1}</div>
-                    <div class="team-name">${entry.name.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
-                    <div class="score">${entry.score}</div>
-                `;
-                leaderboard.appendChild(card);
-            });
+function triggerConfetti() {
+    const confetti = document.getElementById('confetti');
+    if (confetti) {
+        confetti.style.display = 'block';
+        setTimeout(() => confetti.style.display = 'none', 2500);
+    }
+}
 
-            // Update the canvas for PiP
-            updateCanvas();
-        }
+// PiP functionality
+const video = document.getElementById('pipVideo');
+const pipButton = document.getElementById('pipButton');
+const captureArea = document.getElementById('captureArea');
+let canvas, stream, animationFrameId;
 
-        function triggerConfetti() {
-            const confetti = document.getElementById('confetti');
-            if (confetti) {
-                confetti.style.display = 'block';
-                setTimeout(() => confetti.style.display = 'none', 2500);
-            }
-        }
+async function startPiP() {
+    if (!document.pictureInPictureEnabled) {
+        alert('Picture-in-Picture is not supported in this browser.');
+        return;
+    }
 
-        // PiP functionality
-        const video = document.getElementById('pipVideo');
-        const pipButton = document.getElementById('pipButton');
-        const captureArea = document.getElementById('captureArea');
-        let canvas, stream;
+    try {
+        // Create a canvas to capture the leaderboard area
+        canvas = document.createElement('canvas');
+        canvas.width = 800; // Adjust based on your needs
+        canvas.height = 600; // Adjust based on your needs
+        const ctx = canvas.getContext('2d');
 
-        async function startPiP() {
-            if (!document.pictureInPictureEnabled) {
-                alert('Picture-in-Picture is not supported in this browser.');
-                return;
-            }
+        // Start capturing the captureArea
+        stream = canvas.captureStream(30); // 30 FPS
+        video.srcObject = stream;
 
-            try {
-                // Create a canvas to capture the leaderboard area
-                canvas = document.createElement('canvas');
-                canvas.width = 800; // Adjust based on your needs
-                canvas.height = 600; // Adjust based on your needs
-                const ctx = canvas.getContext('2d');
-
-                // Start capturing the captureArea
-                stream = canvas.captureStream(30); // 30 FPS
-                video.srcObject = stream;
-
-                // Request PiP
-                if (document.pictureInPictureElement) {
-                    await document.exitPictureInPicture();
-                }
-                await video.requestPictureInPicture();
-                pipButton.textContent = 'Exit PiP Mode';
-            } catch (error) {
-                console.error('Error entering PiP mode:', error);
-                alert('Failed to enter PiP mode.');
-            }
-        }
-
-        function updateCanvas() {
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            // Clear canvas
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            // Draw the captureArea (leaderboard) onto the canvas
-            // This is a simplified approach; for better quality, you might need a library like html2canvas
-            ctx.fillStyle = '#f8fafc';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.font = '24px "Press Start 2P"';
-            ctx.fillStyle = '#1f2937';
-            ctx.fillText('Leaderboard Snapshot', 20, 50);
-            // Note: For accurate rendering, use html2canvas or similar to capture the DOM
-            const leaderboard = document.getElementById('leaderboard');
-            if (leaderboard) {
-                ctx.fillText(leaderboard.innerText.substring(0, 100), 20, 100); // Simplified text rendering
-            }
-        }
-
-        pipButton.addEventListener('click', async () => {
-            if (document.pictureInPictureElement) {
-                await document.exitPictureInPicture();
-                pipButton.textContent = 'Enter PiP Mode';
-            } else {
-                await startPiP();
-            }
+        // Wait for the video metadata to load
+        await new Promise((resolve, reject) => {
+            video.onloadedmetadata = resolve;
+            video.onerror = () => reject(new Error('Video metadata failed to load'));
+            video.load(); // Ensure the video loads the stream
         });
 
-        video.addEventListener('enterpictureinpicture', () => {
-            pipButton.textContent = 'Exit PiP Mode';
-        });
+        // Start rendering loop for the canvas
+        updateCanvasLoop();
 
-        video.addEventListener('leavepictureinpicture', () => {
-            pipButton.textContent = 'Enter PiP Mode';
-            if (stream) {
-                stream.getTracks().forEach(track => track.stop());
-            }
-        });
+        // Request PiP
+        if (document.pictureInPictureElement) {
+            await document.exitPictureInPicture();
+        }
+        await video.requestPictureInPicture();
+        pipButton.textContent = 'Exit PiP Mode';
+    } catch (error) {
+        console.error('Error entering PiP mode:', error);
+        alert('Failed to enter PiP mode: ' + error.message);
+    }
+}
 
-        document.addEventListener('DOMContentLoaded', () => {
-            loadLeaderboard();
-            setInterval(loadLeaderboard, 2000);
-        });
+function updateCanvas() {
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    // Clear canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // Draw the captureArea (leaderboard) onto the canvas
+    ctx.fillStyle = '#f8fafc';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.font = '24px "Press Start 2P"';
+    ctx.fillStyle = '#1f2937';
+    ctx.fillText('Leaderboard Snapshot', 20, 50);
+    // Note: For accurate rendering, use html2canvas or similar to capture the DOM
+    const leaderboard = document.getElementById('leaderboard');
+    if (leaderboard) {
+        ctx.fillText(leaderboard.innerText.substring(0, 100), 20, 100); // Simplified text rendering
+    }
+}
+
+function updateCanvasLoop() {
+    if (!canvas || !stream) return;
+    updateCanvas();
+    animationFrameId = requestAnimationFrame(updateCanvasLoop);
+}
+
+pipButton.addEventListener('click', async () => {
+    if (document.pictureInPictureElement) {
+        await document.exitPictureInPicture();
+        pipButton.textContent = 'Enter PiP Mode';
+        // Stop the canvas update loop
+        if (animationFrameId) {
+            cancelAnimationFrame(animationFrameId);
+        }
+    } else {
+        await startPiP();
+    }
+});
+
+video.addEventListener('enterpictureinpicture', () => {
+    pipButton.textContent = 'Exit PiP Mode';
+});
+
+video.addEventListener('leavepictureinpicture', () => {
+    pipButton.textContent = 'Enter PiP Mode';
+    if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+        stream = null;
+    }
+    // Stop the canvas update loop
+    if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+    }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    loadLeaderboard();
+    setInterval(loadLeaderboard, 2000);
+});
     </script>
 </body>
 </html>
