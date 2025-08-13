@@ -5,10 +5,7 @@
     <title>Pixel Quest Leaderboard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Press+Start+2P&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        :мель
-
         :root {
             --bg: #f8fafc;
             --card: #ffffff;
@@ -77,12 +74,15 @@
                 transform: translate(-50px, 100vh) scale(1);
                 opacity: 0;
             }
+
             10% {
                 opacity: 0.6;
             }
+
             90% {
                 opacity: 0.6;
             }
+
             100% {
                 transform: translate(100vw, -50px) scale(1.2);
                 opacity: 0;
@@ -126,12 +126,15 @@
                 transform: translateX(-100px);
                 opacity: 0;
             }
+
             20% {
                 opacity: 0.7;
             }
+
             80% {
                 opacity: 0.7;
             }
+
             100% {
                 transform: translateX(100vw);
                 opacity: 0;
@@ -165,6 +168,25 @@
         .game-container {
             max-width: 800px;
             margin: 0 auto;
+        }
+
+        .pip-button {
+            display: block;
+            margin: 20px auto;
+            padding: 12px 24px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 16px;
+            color: #ffffff;
+            background: var(--accent);
+            border: 3px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .pip-button:hover {
+            background: var(--accent-secondary);
+            transform: scale(1.05);
         }
 
         .leaderboard {
@@ -332,79 +354,8 @@
             }
         }
 
-        /* PiP-specific styles */
-        .pip-button {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 8px 16px;
-            background: var(--accent);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-family: 'Roboto', sans-serif;
-            font-size: 14px;
-            cursor: pointer;
-            box-shadow: 0 4px 8px var(--shadow);
-            z-index: 100;
-        }
-
-        .pip-button:hover {
-            background: var(--accent-secondary);
-            transform: scale(1.05);
-        }
-
-        video {
-            display: none; /* Hidden video for PiP */
-        }
-
-        /* Compact leaderboard for PiP */
-        .pip-leaderboard {
-            display: none; /* Hidden by default, used for PiP capture */
-            width: 300px;
-            max-height: 400px;
-            background: var(--card);
-            border: 2px solid var(--accent);
-            border-radius: 8px;
-            padding: 10px;
-            box-shadow: 0 4px 12px var(--shadow);
-        }
-
-        .pip-leaderboard-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-family: 'Roboto', sans-serif;
-            font-size: 14px;
-            color: var(--text);
-            margin-bottom: 8px;
-        }
-
-        .pip-leaderboard-item.first {
-            font-weight: bold;
-            color: #FFD700;
-        }
-
-        .pip-leaderboard-item.second {
-            font-weight: bold;
-            color: #C0C0C0;
-        }
-
-        .pip-leaderboard-item.third {
-            font-weight: bold;
-            color: #CD7F32;
-        }
-
-        .pip-leaderboard-item span:first-child {
-            flex: 1;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .pip-leaderboard-item span:last-child {
-            font-weight: bold;
-            color: var(--accent);
+        #pipCanvas {
+            display: none;
         }
 
         @media (max-width: 768px) {
@@ -440,17 +391,8 @@
             }
 
             .pip-button {
-                padding: 6px 12px;
-                font-size: 12px;
-            }
-
-            .pip-leaderboard {
-                width: 250px;
-                max-height: 300px;
-            }
-
-            .pip-leaderboard-item {
-                font-size: 12px;
+                font-size: 14px;
+                padding: 10px 20px;
             }
         }
 
@@ -483,17 +425,8 @@
             }
 
             .pip-button {
-                padding: 5px 10px;
-                font-size: 10px;
-            }
-
-            .pip-leaderboard {
-                width: 200px;
-                max-height: 250px;
-            }
-
-            .pip-leaderboard-item {
-                font-size: 10px;
+                font-size: 12px;
+                padding: 8px 16px;
             }
         }
     </style>
@@ -524,21 +457,20 @@
         </div>
     </div>
 
-    <button class="pip-button" id="pipButton">Enter PiP Mode</button>
-
     <div class="header">
         <h1>🎮 Quiz Final Leaderboard</h1>
     </div>
 
     <div class="game-container">
+        <button class="pip-button" id="pipButton">Toggle Picture-in-Picture</button>
         <div class="leaderboard" id="leaderboard"></div>
-        <div class="pip-leaderboard" id="pipLeaderboard"></div>
+        <canvas id="pipCanvas" width="300" height="200"></canvas>
     </div>
-
-    <video id="pipVideo" autoplay muted></video>
 
     <script>
         const BLOB_URL = 'https://jsonblob.com/api/jsonBlob/1405072885638422528';
+        let leaderboardData = { entries: [], version: 0 };
+        let isPipActive = false;
 
         async function fetchLeaderboard() {
             try {
@@ -567,17 +499,64 @@
             }
         }
 
-        async function loadLeaderboard() {
-            const { entries } = await fetchLeaderboard();
-            entries.sort((a, b) => b.score - a.score);
-            const leaderboard = document.getElementById('leaderboard');
-            const pipLeaderboard = document.getElementById('pipLeaderboard');
-            if (!leaderboard || !pipLeaderboard) return;
-            leaderboard.innerHTML = '';
-            pipLeaderboard.innerHTML = '';
+        function drawLeaderboardOnCanvas(ctx, entries) {
+            ctx.fillStyle = '#f8fafc';
+            ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+            ctx.fillStyle = '#1f2937';
+            ctx.font = '14px "Press Start 2P"';
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'middle';
 
+            const lineHeight = 30;
             entries.slice(0, 5).forEach((entry, index) => {
-                // Main leaderboard
+                const text = `${entry.name}: ${entry.score}`;
+                ctx.fillText(text, 10, 30 + index * lineHeight);
+            });
+        }
+
+        async function enterPipMode() {
+            const canvas = document.getElementById('pipCanvas');
+            if (!canvas) return;
+
+            try {
+                if (document.pictureInPictureElement) {
+                    await document.exitPictureInPicture();
+                    isPipActive = false;
+                    document.getElementById('pipButton').textContent = 'Toggle Picture-in-Picture';
+                    canvas.style.display = 'none';
+                    return;
+                }
+
+                const ctx = canvas.getContext('2d');
+                drawLeaderboardOnCanvas(ctx, leaderboardData.entries);
+
+                await canvas.requestPictureInPicture();
+                isPipActive = true;
+                document.getElementById('pipButton').textContent = 'Exit Picture-in-Picture';
+                canvas.style.display = 'block';
+
+                function updatePipCanvas() {
+                    if (isPipActive) {
+                        drawLeaderboardOnCanvas(canvas.getContext('2d'), leaderboardData.entries);
+                        requestAnimationFrame(updatePipCanvas);
+                    }
+                }
+
+                requestAnimationFrame(updatePipCanvas);
+            } catch (error) {
+                console.error('Error entering PiP mode:', error);
+            }
+        }
+
+        async function loadLeaderboard() {
+            const data = await fetchLeaderboard();
+            leaderboardData = data;
+            data.entries.sort((a, b) => b.score - a.score);
+            const leaderboard = document.getElementById('leaderboard');
+            if (!leaderboard) return;
+            leaderboard.innerHTML = '';
+
+            data.entries.slice(0, 5).forEach((entry, index) => {
                 const card = document.createElement('div');
                 let placeClass = '';
                 if (index === 0) {
@@ -596,19 +575,14 @@
                     <div class="score">${entry.score}</div>
                 `;
                 leaderboard.appendChild(card);
-
-                // PiP leaderboard
-                const pipItem = document.createElement('div');
-                pipItem.className = `pip-leaderboard-item ${placeClass}`;
-                pipItem.innerHTML = `
-                    <span>${entry.name.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</span>
-                    <span>${entry.score}</span>
-                `;
-                pipLeaderboard.appendChild(pipItem);
             });
 
-            // Update canvas for PiP
-            updateCanvas();
+            if (isPipActive) {
+                const canvas = document.getElementById('pipCanvas');
+                if (canvas && canvas.getContext) {
+                    drawLeaderboardOnCanvas(canvas.getContext('2d'), data.entries);
+                }
+            }
         }
 
         function triggerConfetti() {
@@ -619,110 +593,16 @@
             }
         }
 
-        // PiP functionality
-        const video = document.getElementById('pipVideo');
-        const pipButton = document.getElementById('pipButton');
-        const pipLeaderboard = document.getElementById('pipLeaderboard');
-        let canvas, stream, animationFrameId;
-
-        async function startPiP() {
-            if (!document.pictureInPictureEnabled) {
-                alert('Picture-in-Picture is not supported in this browser.');
-                return;
-            }
-
-            try {
-                // Create canvas
-                canvas = document.createElement('canvas');
-                canvas.width = 300; // Compact size for PiP
-                canvas.height = 400;
-                const ctx = canvas.getContext('2d');
-
-                // Start stream
-                stream = canvas.captureStream(30); // 30 FPS
-                video.srcObject = stream;
-
-                // Wait for video metadata
-                await new Promise((resolve, reject) => {
-                    video.onloadedmetadata = resolve;
-                    video.onerror = () => reject(new Error('Video metadata failed to load'));
-                    video.load();
-                });
-
-                // Start rendering loop
-                updateCanvasLoop();
-
-                // Request PiP
-                if (document.pictureInPictureElement) {
-                    await document.exitPictureInPicture();
-                }
-                await video.requestPictureInPicture();
-                pipButton.textContent = 'Exit PiP Mode';
-            } catch (error) {
-                console.error('Error entering PiP mode:', error);
-                alert('Failed to enter PiP mode: ' + error.message);
-            }
-        }
-
-        async function updateCanvas() {
-            if (!canvas || !pipLeaderboard) return;
-            const ctx = canvas.getContext('2d');
-            try {
-                const renderedCanvas = await html2canvas(pipLeaderboard, {
-                    scale: 1,
-                    backgroundColor: '#ffffff',
-                    useCORS: true,
-                    logging: false
-                });
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.drawImage(renderedCanvas, 0, 0, canvas.width, canvas.height);
-            } catch (error) {
-                console.error('Error rendering canvas:', error);
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.fillStyle = '#ffffff';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                ctx.font = '14px Roboto';
-                ctx.fillStyle = '#1f2937';
-                ctx.fillText('Error rendering leaderboard', 20, 50);
-            }
-        }
-
-        function updateCanvasLoop() {
-            if (!canvas || !stream) return;
-            updateCanvas();
-            animationFrameId = requestAnimationFrame(updateCanvasLoop);
-        }
-
-        pipButton.addEventListener('click', async () => {
-            if (document.pictureInPictureElement) {
-                await document.exitPictureInPicture();
-                pipButton.textContent = 'Enter PiP Mode';
-                if (animationFrameId) {
-                    cancelAnimationFrame(animationFrameId);
-                }
-            } else {
-                await startPiP();
-            }
-        });
-
-        video.addEventListener('enterpictureinpicture', () => {
-            pipButton.textContent = 'Exit PiP Mode';
-        });
-
-        video.addEventListener('leavepictureinpicture', () => {
-            pipButton.textContent = 'Enter PiP Mode';
-            if (stream) {
-                stream.getTracks().forEach(track => track.stop());
-                stream = null;
-            }
-            if (animationFrameId) {
-                cancelAnimationFrame(animationFrameId);
-            }
-        });
-
         document.addEventListener('DOMContentLoaded', () => {
             loadLeaderboard();
             setInterval(loadLeaderboard, 2000);
+
+            const pipButton = document.getElementById('pipButton');
+            if (pipButton && 'pictureInPictureEnabled' in document) {
+                pipButton.addEventListener('click', enterPipMode);
+            } else {
+                pipButton.style.display = 'none';
+            }
         });
     </script>
 </body>
