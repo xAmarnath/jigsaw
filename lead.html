@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
-        /* Existing styles remain unchanged */
         :root {
             --bg: #f8fafc;
             --card: #ffffff;
@@ -75,15 +74,12 @@
                 transform: translate(-50px, 100vh) scale(1);
                 opacity: 0;
             }
-
             10% {
                 opacity: 0.6;
             }
-
             90% {
                 opacity: 0.6;
             }
-
             100% {
                 transform: translate(100vw, -50px) scale(1.2);
                 opacity: 0;
@@ -127,15 +123,12 @@
                 transform: translateX(-100px);
                 opacity: 0;
             }
-
             20% {
                 opacity: 0.7;
             }
-
             80% {
                 opacity: 0.7;
             }
-
             100% {
                 transform: translateX(100vw);
                 opacity: 0;
@@ -336,30 +329,108 @@
             }
         }
 
-        /* New styles for PiP button and video */
-        .pip-button {
+        /* Floating Window Styles */
+        .floating-window {
             position: fixed;
             top: 20px;
             right: 20px;
-            padding: 10px 20px;
+            width: 300px;
+            max-height: 400px;
+            background: var(--card);
+            border: 2px solid var(--accent);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px var(--shadow);
+            z-index: 1000;
+            overflow: hidden;
+            display: none; /* Hidden by default */
+        }
+
+        .floating-window-header {
+            background: var(--accent);
+            color: white;
+            padding: 8px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 14px;
+            text-align: center;
+            cursor: move; /* Draggable header */
+            user-select: none;
+        }
+
+        .floating-window-close {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .floating-leaderboard {
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 350px;
+            overflow-y: auto;
+        }
+
+        .floating-leaderboard-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: 'Roboto', sans-serif;
+            font-size: 14px;
+            color: var(--text);
+        }
+
+        .floating-leaderboard-item.first {
+            font-weight: bold;
+            color: #FFD700;
+        }
+
+        .floating-leaderboard-item.second {
+            font-weight: bold;
+            color: #C0C0C0;
+        }
+
+        .floating-leaderboard-item.third {
+            font-weight: bold;
+            color: #CD7F32;
+        }
+
+        .floating-leaderboard-item span:first-child {
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .floating-leaderboard-item span:last-child {
+            font-weight: bold;
+            color: var(--accent);
+        }
+
+        .toggle-floating-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 8px 16px;
             background: var(--accent);
             color: white;
             border: none;
             border-radius: 8px;
             font-family: 'Roboto', sans-serif;
-            font-size: 16px;
+            font-size: 14px;
             cursor: pointer;
             box-shadow: 0 4px 8px var(--shadow);
             z-index: 100;
         }
 
-        .pip-button:hover {
+        .toggle-floating-button:hover {
             background: var(--accent-secondary);
             transform: scale(1.05);
-        }
-
-        video {
-            display: none; /* Hidden video element for PiP */
         }
 
         @media (max-width: 768px) {
@@ -394,9 +465,22 @@
                 height: 15px;
             }
 
-            .pip-button {
-                padding: 8px 16px;
-                font-size: 14px;
+            .floating-window {
+                width: 250px;
+                max-height: 300px;
+            }
+
+            .floating-leaderboard {
+                padding: 8px;
+            }
+
+            .floating-leaderboard-item {
+                font-size: 12px;
+            }
+
+            .toggle-floating-button {
+                padding: 6px 12px;
+                font-size: 12px;
             }
         }
 
@@ -428,9 +512,22 @@
                 height: 12px;
             }
 
-            .pip-button {
-                padding: 6px 12px;
-                font-size: 12px;
+            .floating-window {
+                width: 200px;
+                max-height: 250px;
+            }
+
+            .floating-leaderboard {
+                padding: 6px;
+            }
+
+            .floating-leaderboard-item {
+                font-size: 10px;
+            }
+
+            .toggle-floating-button {
+                padding: 5px 10px;
+                font-size: 10px;
             }
         }
     </style>
@@ -461,191 +558,159 @@
         </div>
     </div>
 
-    <button class="pip-button" id="pipButton">Enter PiP Mode</button>
+    <button class="toggle-floating-button" id="toggleFloating">Show Floating Leaderboard</button>
+
+    <div class="floating-window" id="floatingWindow">
+        <div class="floating-window-header" id="floatingHeader">
+            Leaderboard
+            <button class="floating-window-close" id="closeFloating">×</button>
+        </div>
+        <div class="floating-leaderboard" id="floatingLeaderboard"></div>
+    </div>
 
     <div class="header">
         <h1>🎮 Quiz Final Leaderboard</h1>
     </div>
 
-    <div class="game-container" id="captureArea">
+    <div class="game-container">
         <div class="leaderboard" id="leaderboard"></div>
     </div>
-
-    <video id="pipVideo" autoplay muted></video>
 
     <script>
         const BLOB_URL = 'https://jsonblob.com/api/jsonBlob/1405072885638422528';
 
-async function fetchLeaderboard() {
-    try {
-        const response = await fetch(BLOB_URL, {
-            method: 'GET',
-            headers: { 'Content-Type': 'application/json' }
-        });
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        const data = await response.json();
-        // Ensure entries is an array
-        return {
-            entries: Array.isArray(data.entries) ? data.entries : [],
-            version: data.version || 0
-        };
-    } catch (error) {
-        console.error('Error fetching leaderboard:', error);
-        const localData = localStorage.getItem('leaderboard');
-        try {
-            const parsed = JSON.parse(localData || '{"entries":[],"version":0}');
-            return {
-                entries: Array.isArray(parsed.entries) ? parsed.entries : [],
-                version: parsed.version || 0
-            };
-        } catch {
-            return { entries: [], version: 0 };
-        }
-    }
-}
-
-async function loadLeaderboard() {
-    const { entries } = await fetchLeaderboard();
-    entries.sort((a, b) => b.score - a.score);
-    const leaderboard = document.getElementById('leaderboard');
-    if (!leaderboard) return;
-    leaderboard.innerHTML = '';
-
-    entries.slice(0, 5).forEach((entry, index) => {
-        const card = document.createElement('div');
-        let placeClass = '';
-        if (index === 0) {
-            placeClass = 'first';
-            triggerConfetti();
-        } else if (index === 1) {
-            placeClass = 'second';
-        } else if (index === 2) {
-            placeClass = 'third';
+        async function fetchLeaderboard() {
+            try {
+                const response = await fetch(BLOB_URL, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const data = await response.json();
+                return {
+                    entries: Array.isArray(data.entries) ? data.entries : [],
+                    version: data.version || 0
+                };
+            } catch (error) {
+                console.error('Error fetching leaderboard:', error);
+                const localData = localStorage.getItem('leaderboard');
+                try {
+                    const parsed = JSON.parse(localData || '{"entries":[],"version":0}');
+                    return {
+                        entries: Array.isArray(parsed.entries) ? parsed.entries : [],
+                        version: parsed.version || 0
+                    };
+                } catch {
+                    return { entries: [], version: 0 };
+                }
+            }
         }
 
-        card.className = `leaderboard-card ${placeClass}`;
-        card.innerHTML = `
-            <div class="position">${index + 1}</div>
-            <div class="team-name">${entry.name.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
-            <div class="score">${entry.score}</div>
-        `;
-        leaderboard.appendChild(card);
-    });
+        async function loadLeaderboard() {
+            const { entries } = await fetchLeaderboard();
+            entries.sort((a, b) => b.score - a.score);
+            const leaderboard = document.getElementById('leaderboard');
+            const floatingLeaderboard = document.getElementById('floatingLeaderboard');
+            if (!leaderboard || !floatingLeaderboard) return;
+            leaderboard.innerHTML = '';
+            floatingLeaderboard.innerHTML = '';
 
-    // Update the canvas for PiP
-    updateCanvas();
-}
+            entries.slice(0, 5).forEach((entry, index) => {
+                // Main leaderboard
+                const card = document.createElement('div');
+                let placeClass = '';
+                if (index === 0) {
+                    placeClass = 'first';
+                    triggerConfetti();
+                } else if (index === 1) {
+                    placeClass = 'second';
+                } else if (index === 2) {
+                    placeClass = 'third';
+                }
 
-function triggerConfetti() {
-    const confetti = document.getElementById('confetti');
-    if (confetti) {
-        confetti.style.display = 'block';
-        setTimeout(() => confetti.style.display = 'none', 2500);
-    }
-}
+                card.className = `leaderboard-card ${placeClass}`;
+                card.innerHTML = `
+                    <div class="position">${index + 1}</div>
+                    <div class="team-name">${entry.name.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
+                    <div class="score">${entry.score}</div>
+                `;
+                leaderboard.appendChild(card);
 
-// PiP functionality
-const video = document.getElementById('pipVideo');
-const pipButton = document.getElementById('pipButton');
-const captureArea = document.getElementById('captureArea');
-let canvas, stream, animationFrameId;
+                // Floating leaderboard
+                const floatItem = document.createElement('div');
+                floatItem.className = `floating-leaderboard-item ${placeClass}`;
+                floatItem.innerHTML = `
+                    <span>${entry.name.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</span>
+                    <span>${entry.score}</span>
+                `;
+                floatingLeaderboard.appendChild(floatItem);
+            });
+        }
 
-async function startPiP() {
-    if (!document.pictureInPictureEnabled) {
-        alert('Picture-in-Picture is not supported in this browser.');
-        return;
-    }
+        function triggerConfetti() {
+            const confetti = document.getElementById('confetti');
+            if (confetti) {
+                confetti.style.display = 'block';
+                setTimeout(() => confetti.style.display = 'none', 2500);
+            }
+        }
 
-    try {
-        // Create a canvas to capture the leaderboard area
-        canvas = document.createElement('canvas');
-        canvas.width = 800; // Adjust based on your needs
-        canvas.height = 600; // Adjust based on your needs
-        const ctx = canvas.getContext('2d');
+        // Floating window controls
+        const floatingWindow = document.getElementById('floatingWindow');
+        const toggleButton = document.getElementById('toggleFloating');
+        const closeButton = document.getElementById('closeFloating');
+        const header = document.getElementById('floatingHeader');
 
-        // Start capturing the captureArea
-        stream = canvas.captureStream(30); // 30 FPS
-        video.srcObject = stream;
-
-        // Wait for the video metadata to load
-        await new Promise((resolve, reject) => {
-            video.onloadedmetadata = resolve;
-            video.onerror = () => reject(new Error('Video metadata failed to load'));
-            video.load(); // Ensure the video loads the stream
+        toggleButton.addEventListener('click', () => {
+            if (floatingWindow.style.display === 'block') {
+                floatingWindow.style.display = 'none';
+                toggleButton.textContent = 'Show Floating Leaderboard';
+            } else {
+                floatingWindow.style.display = 'block';
+                toggleButton.textContent = 'Hide Floating Leaderboard';
+            }
         });
 
-        // Start rendering loop for the canvas
-        updateCanvasLoop();
+        closeButton.addEventListener('click', () => {
+            floatingWindow.style.display = 'none';
+            toggleButton.textContent = 'Show Floating Leaderboard';
+        });
 
-        // Request PiP
-        if (document.pictureInPictureElement) {
-            await document.exitPictureInPicture();
-        }
-        await video.requestPictureInPicture();
-        pipButton.textContent = 'Exit PiP Mode';
-    } catch (error) {
-        console.error('Error entering PiP mode:', error);
-        alert('Failed to enter PiP mode: ' + error.message);
-    }
-}
+        // Draggable functionality
+        let isDragging = false;
+        let currentX;
+        let currentY;
+        let initialX;
+        let initialY;
 
-function updateCanvas() {
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    // Clear canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    // Draw the captureArea (leaderboard) onto the canvas
-    ctx.fillStyle = '#f8fafc';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.font = '24px "Press Start 2P"';
-    ctx.fillStyle = '#1f2937';
-    ctx.fillText('Leaderboard Snapshot', 20, 50);
-    // Note: For accurate rendering, use html2canvas or similar to capture the DOM
-    const leaderboard = document.getElementById('leaderboard');
-    if (leaderboard) {
-        ctx.fillText(leaderboard.innerText.substring(0, 100), 20, 100); // Simplified text rendering
-    }
-}
+        header.addEventListener('mousedown', (e) => {
+            initialX = e.clientX - currentX;
+            initialY = e.clientY - currentY;
+            isDragging = true;
+        });
 
-function updateCanvasLoop() {
-    if (!canvas || !stream) return;
-    updateCanvas();
-    animationFrameId = requestAnimationFrame(updateCanvasLoop);
-}
+        document.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                e.preventDefault();
+                currentX = e.clientX - initialX;
+                currentY = e.clientY - initialY;
+                floatingWindow.style.left = `${currentX}px`;
+                floatingWindow.style.top = `${currentY}px`;
+            }
+        });
 
-pipButton.addEventListener('click', async () => {
-    if (document.pictureInPictureElement) {
-        await document.exitPictureInPicture();
-        pipButton.textContent = 'Enter PiP Mode';
-        // Stop the canvas update loop
-        if (animationFrameId) {
-            cancelAnimationFrame(animationFrameId);
-        }
-    } else {
-        await startPiP();
-    }
-});
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
 
-video.addEventListener('enterpictureinpicture', () => {
-    pipButton.textContent = 'Exit PiP Mode';
-});
+        // Initialize floating window position
+        floatingWindow.style.left = '20px';
+        floatingWindow.style.top = '20px';
 
-video.addEventListener('leavepictureinpicture', () => {
-    pipButton.textContent = 'Enter PiP Mode';
-    if (stream) {
-        stream.getTracks().forEach(track => track.stop());
-        stream = null;
-    }
-    // Stop the canvas update loop
-    if (animationFrameId) {
-        cancelAnimationFrame(animationFrameId);
-    }
-});
-
-document.addEventListener('DOMContentLoaded', () => {
-    loadLeaderboard();
-    setInterval(loadLeaderboard, 2000);
-});
+        document.addEventListener('DOMContentLoaded', () => {
+            loadLeaderboard();
+            setInterval(loadLeaderboard, 2000);
+        });
     </script>
 </body>
 </html>
