@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ISRO Quiz</title>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet" />
   <style>
@@ -78,10 +79,23 @@
     }
     button:hover:not(:disabled) { background-color: #1e3a8a; transform: translateY(-2px); }
     button:disabled { background: #aaa; cursor: not-allowed; }
+
+    #startSetPage {
+      display: none;
+      font-size: 32px;
+      font-weight: 700;
+      color: #111;
+      margin-bottom: 30px;
+    }
+    #startSetBtn {
+      background-color: #2563eb;
+      padding: 16px 40px;
+      font-size: 20px;
+      border-radius: 12px;
+    }
   </style>
 </head>
 <body>
-
   <div id="bgContainer">
     <video id="bgVideo" muted autoplay loop playsinline>
       <source src="https://envs.sh/dKh.mp4" type="video/mp4" />
@@ -93,60 +107,63 @@
   <div class="center-wrapper">
     <div id="quizContainer">
       <img id="imagePlaceholder" src="https://envs.sh/dGy.jpg" alt="ISRO Logo" />
-      <div id="setProgress">Set 1 of 5</div>
-      <div id="question">Loading question...</div>
-      <button id="showAnswerBtn">Show Answer</button>
-      <div id="answer"></div>
-      <div>
+      <div id="startSetPage">Start Set 1</div>
+      <div id="setProgress" style="display: none;">Set 1 of 5</div>
+      <div id="question" style="display: none;">Loading question...</div>
+      <button id="showAnswerBtn" style="display: none;">Show Answer</button>
+      <div id="answer" style="display: none;"></div>
+      <div id="buttonContainer" style="display: none;">
         <button id="continueBtn" disabled>Continue</button>
         <button id="skipSetBtn">Quit to Next Set</button>
       </div>
+      <button id="startSetBtn">Start Set</button>
     </div>
   </div>
 
   <script>
     const quizData = [
-    {
-      set: 1,
-      questions: [
-        { question: "What is the full form of GSLV?", answer: "Geosynchronous Satellite Launch Vehicle" },
-        { question: "By which year is the Indian Space Station expected to be fully operational?", answer: "2035" },
-        { question: "Which ISRO mission aims to study Venus?", answer: "Shukrayaan-1" }
-      ]
-    },
-    {
-      set: 2,
-      questions: [
-        { question: "Which was the first Indian satellite to provide direct-to-home TV services?", answer: "INSAT-4A" },
-        { question: "Name the uncrewed test flight conducted in 2023 to test the crew escape system for Gaganyaan", answer: "TV-D1" },
-        { question: "What is the planned orbital altitude for Gaganyaan?", answer: "400 km" }
-      ]
-    },
-    {
-      set: 3,
-      questions: [
-        { question: "What is the proposed crew capacity for each Indian Space Station module?", answer: "3–4 astronauts" },
-        { question: "What is the name of India’s Sun mission?", answer: "Aditya-L1" },
-        { question: "Which ISRO project aims to develop indigenous docking technology for the space station?", answer: "SPADEX (Space Docking Experiment)" }
-      ]
-    },
-    {
-      set: 4,
-      questions: [
-        { question: "Who was the first human in space?", answer: "Yuri Gagarin (1961)" },
-        { question: "Which Indian mission aims to monitor objects in Earth’s orbit?", answer: "Rohini Satellite RS-1 (1980)" },
-        { question: "Which satellite was India’s first dedicated astronomy satellite?", answer: "Astrosat" }
-      ]
-    },
-    {
-      set: 5,
-      questions: [
-        { question: "When did India successfully launch its first lunar mission, Chandrayaan-1?", answer: "2008" },
-        { question: "Which Indian rocket is nicknamed “Bahubali”?", answer: "LVM3" },
-        { question: "Which was the first spacecraft to successfully land on Mars?", answer: "Viking 1 (1976)" }
-      ]
-    }
-  ];
+      {
+        set: 1,
+        questions: [
+          { question: "What is the full form of GSLV?", answer: "Geosynchronous Satellite Launch Vehicle" },
+          { question: "By which year is the Indian Space Station expected to be fully operational?", answer: "2035" },
+          { question: "Which Indian launch vehicle made its maiden flight in August 2022", answer: "SSLV" }
+        ]
+      },
+      {
+        set: 2,
+        questions: [
+          { question: "Who is the current chairperson of ISRO?", answer: "V. Narayanan" },
+          { question: "Name the unscrewed test flight conducted in 2023 to test the crew escape system for Gaganyaan", answer: "TV-D1" },
+          { question: "What is the planned orbital altitude for Gaganyaan?", answer: "400 km" }
+        ]
+      },
+      {
+        set: 3,
+        questions: [
+          { question: "What is the proposed crew capacity for each Indian Space Station module?", answer: "3–4 astronauts" },
+          { question: "What is the name of India’s Sun mission?", answer: "Aditya-L1" },
+          { question: "Which ISRO project aims to develop indigenous docking technology for the space station?", answer: "SPADEX (Space Docking Experiment)" }
+        ]
+      },
+      {
+        set: 4,
+        questions: [
+          { question: "Who was the first human in space?", answer: "Yuri Gagarin (1961)" },
+          { question: "Which Indian mission aims to monitor objects in Earth’s orbit?", answer: "Rohini Satellite RS-1 (1980)" },
+          { question: "Which was the first dedicated astronomy satellite?", answer: "Astrosat" }
+        ]
+      },
+      {
+        set: 5,
+        questions: [
+          { question: "When did India successfully launch its first lunar mission, Chandrayaan-1?", answer: "2008" },
+          { question: "Which Indian rocket is nicknamed “Bahubali”?", answer: "LVM3" },
+          { question: "Which was the first spacecraft to successfully land on Mars?", answer: "Viking 1 (1976)" }
+        ]
+      }
+    ];
+
     let currentSet = 0, currentQuestion = 0;
     const setProgressEl = document.getElementById('setProgress');
     const questionEl = document.getElementById('question');
@@ -154,6 +171,31 @@
     const showAnswerBtn = document.getElementById('showAnswerBtn');
     const continueBtn = document.getElementById('continueBtn');
     const skipSetBtn = document.getElementById('skipSetBtn');
+    const startSetPage = document.getElementById('startSetPage');
+    const startSetBtn = document.getElementById('startSetBtn');
+    const buttonContainer = document.getElementById('buttonContainer');
+
+    function showStartPage() {
+      if (currentSet >= quizData.length) {
+        setProgressEl.textContent = "Completed";
+        questionEl.textContent = "🚀 All sets completed!";
+        answerEl.textContent = "";
+        showAnswerBtn.style.display = 'none';
+        continueBtn.style.display = 'none';
+        skipSetBtn.style.display = 'none';
+        startSetPage.style.display = 'none';
+        startSetBtn.style.display = 'none';
+        return;
+      }
+      startSetPage.textContent = `Start Set ${currentSet + 1}`;
+      startSetPage.style.display = 'block';
+      startSetBtn.style.display = 'inline-block';
+      setProgressEl.style.display = 'none';
+      questionEl.style.display = 'none';
+      answerEl.style.display = 'none';
+      showAnswerBtn.style.display = 'none';
+      buttonContainer.style.display = 'none';
+    }
 
     function loadQuestion() {
       if (currentSet >= quizData.length) {
@@ -163,13 +205,22 @@
         showAnswerBtn.style.display = 'none';
         continueBtn.style.display = 'none';
         skipSetBtn.style.display = 'none';
+        startSetPage.style.display = 'none';
+        startSetBtn.style.display = 'none';
         return;
       }
       const set = quizData[currentSet];
       const currentQ = set.questions[currentQuestion];
-      setProgressEl.textContent = `Set ${currentSet+1} of ${quizData.length}`;
+      setProgressEl.textContent = `Set ${currentSet + 1} of ${quizData.length}`;
       questionEl.textContent = currentQ.question;
       answerEl.textContent = '';
+      startSetPage.style.display = 'none';
+      startSetBtn.style.display = 'none';
+      setProgressEl.style.display = 'block';
+      questionEl.style.display = 'block';
+      answerEl.style.display = 'block';
+      showAnswerBtn.style.display = 'inline-block';
+      buttonContainer.style.display = 'block';
       showAnswerBtn.disabled = false;
       continueBtn.disabled = true;
     }
@@ -185,22 +236,27 @@
       if (currentQuestion >= quizData[currentSet].questions.length) {
         currentSet++;
         currentQuestion = 0;
+        showStartPage();
+      } else {
+        loadQuestion();
       }
-      loadQuestion();
     });
 
     skipSetBtn.addEventListener('click', () => {
       currentSet++;
       currentQuestion = 0;
+      showStartPage();
+    });
+
+    startSetBtn.addEventListener('click', () => {
       loadQuestion();
     });
 
-    loadQuestion();
     window.addEventListener('load', () => {
-  const video = document.getElementById('bgVideo');
-  video.play().catch(e => console.warn('Autoplay blocked:', e));
-});
-
+      const video = document.getElementById('bgVideo');
+      video.play().catch(e => console.warn('Autoplay blocked:', e));
+      showStartPage();
+    });
   </script>
 </body>
 </html>
