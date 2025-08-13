@@ -13,28 +13,23 @@
             color: #f0f0f0;
             padding: 20px;
         }
-
         .light-theme {
             background-color: #ffffff;
             color: #000000;
         }
-
         .header h1 {
             text-align: center;
             margin-bottom: 30px;
         }
-
         .game-container {
             max-width: 800px;
             margin: 0 auto;
         }
-
         .controls {
             display: flex;
             justify-content: space-between;
             margin-bottom: 20px;
         }
-
         .btn {
             padding: 10px 15px;
             background-color: #3a3a3a;
@@ -45,19 +40,15 @@
             text-decoration: none;
             font-weight: 500;
         }
-
         .btn.secondary {
             background-color: #5a5a5a;
         }
-
         .btn:hover {
             opacity: 0.9;
         }
-
         .form-group {
             margin-bottom: 10px;
         }
-
         input[type="text"],
         input[type="number"] {
             width: 100%;
@@ -66,24 +57,20 @@
             border-radius: 4px;
             box-sizing: border-box;
         }
-
         table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
         }
-
         th, td {
             padding: 10px;
             border: 1px solid #444;
             text-align: left;
         }
-
         .light-theme .btn {
             background-color: #e0e0e0;
             color: #000;
         }
-
         .light-theme input,
         .light-theme table,
         .light-theme th,
@@ -96,17 +83,14 @@
     <div class="cosmic-background">
         <!-- Cosmic background elements copied, omitted -->
     </div>
-
     <div class="header">
         <h1>🌌 Cosmic Leaderboard Admin</h1>
     </div>
-
     <div class="game-container">
         <div class="controls">
             <button class="btn secondary" onclick="toggleTheme()">🌓 Toggle Theme</button>
             <a href="index.html" class="btn">Go to Leaderboard</a>
         </div>
-
         <div class="admin-section">
             <h2>Add New Entry</h2>
             <div class="form-group">
@@ -116,7 +100,6 @@
                 <input type="number" id="new-score" placeholder="Score">
             </div>
             <button class="btn" onclick="addEntry()">Add</button>
-
             <h2>Edit Entries</h2>
             <table id="admin-table">
                 <thead>
@@ -130,10 +113,8 @@
             </table>
         </div>
     </div>
-
     <script>
         const BLOB_URL = 'https://jsonblob.com/api/jsonBlob/1405072885638422528'; // Replace with your jsonblob.com URL
-
         async function fetchLeaderboard() {
             try {
                 const response = await fetch(BLOB_URL, {
@@ -141,30 +122,35 @@
                     headers: { 'Content-Type': 'application/json' }
                 });
                 if (!response.ok) throw new Error('Failed to fetch leaderboard');
-                return await response.json();
+                const data = await response.json();
+                return Array.isArray(data) ? data : [];
             } catch (error) {
                 console.error('Error fetching leaderboard:', error);
-                return JSON.parse(localStorage.getItem('leaderboard') || '[]'); // Fallback to localStorage
+                const localData = localStorage.getItem('leaderboard');
+                try {
+                    const parsed = JSON.parse(localData || '[]');
+                    return Array.isArray(parsed) ? parsed : [];
+                } catch {
+                    return [];
+                }
             }
         }
-
         async function saveLeaderboard(data) {
             try {
                 const response = await fetch(BLOB_URL, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
+                    body: JSON.stringify(Array.isArray(data) ? data : [])
                 });
                 if (!response.ok) throw new Error('Failed to save leaderboard');
                 localStorage.setItem('leaderboard', JSON.stringify(data)); // Cache locally
                 return true;
             } catch (error) {
                 console.error('Error saving leaderboard:', error);
-                localStorage.setItem('leaderboard', JSON.stringify(data)); // Cache locally as fallback
+                localStorage.setItem('leaderboard', JSON.stringify(Array.isArray(data) ? data : [])); // Cache fallback
                 return false;
             }
         }
-
         async function loadAdmin() {
             const data = await fetchLeaderboard();
             const tbody = document.querySelector('#admin-table tbody');
@@ -182,7 +168,6 @@
                 tbody.appendChild(tr);
             });
         }
-
         async function addEntry() {
             const name = document.getElementById('new-name').value.trim();
             const score = parseInt(document.getElementById('new-score').value);
@@ -195,37 +180,36 @@
                 document.getElementById('new-score').value = '';
             }
         }
-
         async function saveEntry(index) {
             const data = await fetchLeaderboard();
             const nameInput = document.querySelector(`.edit-name[data-index="${index}"]`);
             const scoreInput = document.querySelector(`.edit-score[data-index="${index}"]`);
-            data[index].name = nameInput.value.trim();
-            data[index].score = parseInt(scoreInput.value);
-            await saveLeaderboard(data);
-            loadAdmin();
+            if (nameInput && scoreInput && data[index]) {
+                data[index].name = nameInput.value.trim();
+                data[index].score = parseInt(scoreInput.value);
+                await saveLeaderboard(data);
+                loadAdmin();
+            }
         }
-
         async function deleteEntry(index) {
             const data = await fetchLeaderboard();
-            data.splice(index, 1);
-            await saveLeaderboard(data);
-            loadAdmin();
+            if (data[index]) {
+                data.splice(index, 1);
+                await saveLeaderboard(data);
+                loadAdmin();
+            }
         }
-
         function toggleTheme() {
             document.body.classList.toggle('light-theme');
             localStorage.setItem('theme', document.body.classList.contains('light-theme') ? 'light' : 'dark');
         }
-
         document.addEventListener('DOMContentLoaded', () => {
             const savedTheme = localStorage.getItem('theme');
             if (savedTheme === 'light') {
                 document.body.classList.add('light-theme');
             }
             loadAdmin();
-            // Poll for updates Updating every 10 seconds
-            setInterval(loadAdmin, 10000);
+            setInterval(loadAdmin, 3000); // Poll every 3 seconds
         });
     </script>
 </body>
