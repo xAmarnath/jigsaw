@@ -7,77 +7,143 @@
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet" />
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { height: 100%; font-family: 'Space Grotesk', sans-serif; overflow: hidden; color: #111; }
+    html, body { 
+      min-height: 100vh; 
+      font-family: 'Space Grotesk', sans-serif; 
+      color: #111; 
+      background: #f0f0f0;
+    }
 
     /* Background Video + Overlay */
-    #bgContainer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; }
+    #bgContainer { 
+      position: fixed; 
+      top: 0; 
+      left: 0; 
+      width: 100%; 
+      height: 100vh; 
+      z-index: -2; 
+    }
     #bgVideo {
-      width: 100%; height: 100%;
-      object-fit: cover;
-      position: absolute; top: 0; left: 0;
+      width: 100%; 
+      height: 100%; 
+      object-fit: cover; 
+      position: absolute; 
+      top: 0; 
+      left: 0;
     }
     #bgOverlay {
-      position: absolute; top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(255, 255, 255, 0.4);
+      position: absolute; 
+      top: 0; 
+      left: 0; 
+      width: 100%; 
+      height: 100%; 
+      background: rgba(255, 255, 255, 0.4); 
       z-index: -1;
     }
 
     .center-wrapper {
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      height: 100dvh;
-      padding: 30px;
+      min-height: 100vh;
+      padding: 50px 20px;
     }
 
     #allocationContainer {
-      max-width: 760px;
+      max-width: 800px;
       width: 100%;
       background: rgba(255, 255, 255, 0.85);
       backdrop-filter: blur(12px);
       border-radius: 20px;
       box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
-      padding: 50px;
+      padding: 60px;
       text-align: center;
+      margin-bottom: 50px;
     }
 
     #imagePlaceholder {
-      width: 150px; height: 150px; border-radius: 50%;
+      width: 180px; 
+      height: 180px; 
+      border-radius: 50%;
       object-fit: cover;
       border: 3px solid #111;
       box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
-      margin-bottom: 25px;
+      margin: 0 auto 30px;
     }
 
     h1 {
-      font-size: 28px; font-weight: 700;
-      line-height: 1.4; margin-bottom: 30px;
+      font-size: 32px; 
+      font-weight: 700;
+      line-height: 1.4; 
+      margin-bottom: 30px;
       color: #111;
     }
 
     #allocationPrompt {
-      font-size: 20px; color: #444;
-      margin-bottom: 20px; font-weight: 600;
+      font-size: 22px; 
+      color: #444;
+      margin-bottom: 30px; 
+      font-weight: 600;
       min-height: 32px;
     }
 
     #allocationList {
-      font-size: 18px; color: #2563eb;
-      margin-bottom: 20px; font-weight: 600;
-      min-height: 100px;
+      font-size: 20px; 
+      color: #2563eb;
+      margin-bottom: 30px; 
+      font-weight: 600;
+      min-height: 120px;
+      line-height: 1.6;
+    }
+
+    .button-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 15px;
     }
 
     button {
-      background-color: #2563eb; color: white;
-      border: none; padding: 14px 36px;
-      font-size: 18px; font-weight: 600;
-      border-radius: 10px; cursor: pointer;
-      margin: 12px 10px; transition: background 0.3s, transform 0.2s;
+      background-color: #2563eb; 
+      color: white;
+      border: none; 
+      padding: 16px 40px;
+      font-size: 18px; 
+      font-weight: 600;
+      border-radius: 10px; 
+      cursor: pointer;
+      transition: background 0.3s, transform 0.2s;
       font-family: 'Space Grotesk', sans-serif;
     }
-    button:hover:not(:disabled) { background-color: #1e3a8a; transform: translateY(-2px); }
-    button:disabled { background: #aaa; cursor: not-allowed; }
+    button:hover:not(:disabled) { 
+      background-color: #1e3a8a; 
+      transform: translateY(-2px); 
+    }
+    button:disabled { 
+      background: #aaa; 
+      cursor: not-allowed; 
+    }
+
+    /* Desktop optimization */
+    @media (min-width: 768px) {
+      #allocationContainer {
+        padding: 80px;
+      }
+      h1 {
+        font-size: 36px;
+      }
+      #allocationPrompt {
+        font-size: 24px;
+      }
+      #allocationList {
+        font-size: 22px;
+      }
+      button {
+        padding: 18px 48px;
+        font-size: 20px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -93,10 +159,9 @@
     <div id="allocationContainer">
       <img id="imagePlaceholder" src="https://envs.sh/dGy.jpg" alt="ISRO Logo" />
       <h1>Team Set Allocation</h1>
-      <div id="allocationPrompt">Enter team name and pick a button!</div>
-      <input type="text" id="teamInput" placeholder="Enter Team Name" style="padding: 10px; font-size: 16px; margin-bottom: 20px; border-radius: 5px; border: 1px solid #111; font-family: 'Space Grotesk', sans-serif;" />
+      <div id="allocationPrompt">Team 1, pick a button!</div>
       <div id="allocationList">No teams allocated yet.</div>
-      <div>
+      <div class="button-container">
         <button class="pickBtn" data-button="1">Pick Button 1</button>
         <button class="pickBtn" data-button="2">Pick Button 2</button>
         <button class="pickBtn" data-button="3">Pick Button 3</button>
@@ -110,37 +175,31 @@
     const pickButtons = document.querySelectorAll('.pickBtn');
     const allocationList = document.getElementById('allocationList');
     const allocationPrompt = document.getElementById('allocationPrompt');
-    const teamInput = document.getElementById('teamInput');
     let availableSets = [101, 102, 103, 104, 105]; // Sets corresponding to 1-5
     let allocations = [];
+    let currentTeamIndex = 0;
+    const teams = ['Team 1', 'Team 2', 'Team 3', 'Team 4', 'Team 5'];
 
     function updateAllocationDisplay() {
       if (allocations.length === 0) {
         allocationList.textContent = 'No teams allocated yet.';
-        allocationPrompt.textContent = 'Enter team name and pick a button!';
+        allocationPrompt.textContent = `${teams[currentTeamIndex]}, pick a button!`;
       } else {
         allocationList.innerHTML = allocations.map(({ team, set }) => `${team}: Set ${set}`).join('<br>');
         if (availableSets.length > 0) {
-          allocationPrompt.textContent = `Teams allocated: ${allocations.length}/5. Enter team name and pick a button!`;
+          allocationPrompt.textContent = `${teams[currentTeamIndex]}, pick a button!`;
         } else {
           allocationPrompt.textContent = 'All sets allocated!';
           pickButtons.forEach(btn => btn.disabled = true);
-          teamInput.disabled = true;
         }
       }
     }
 
     pickButtons.forEach(button => {
       button.addEventListener('click', () => {
-        const teamName = teamInput.value.trim();
-        if (!teamName) {
-          allocationPrompt.textContent = 'Please enter a team name!';
-          return;
-        }
         if (availableSets.length === 0) {
           allocationPrompt.textContent = 'All sets have been allocated!';
           pickButtons.forEach(btn => btn.disabled = true);
-          teamInput.disabled = true;
           return;
         }
 
@@ -149,13 +208,13 @@
         const assignedSet = availableSets.splice(randomIndex, 1)[0];
 
         // Store allocation
-        allocations.push({ team: teamName, set: assignedSet });
+        allocations.push({ team: teams[currentTeamIndex], set: assignedSet });
 
         // Disable the clicked button
         button.disabled = true;
 
-        // Clear input for next team
-        teamInput.value = '';
+        // Move to next team
+        currentTeamIndex++;
 
         // Update the display
         updateAllocationDisplay();
@@ -165,6 +224,7 @@
     window.addEventListener('load', () => {
       const video = document.getElementById('bgVideo');
       video.play().catch(e => console.warn('Autoplay blocked:', e));
+      updateAllocationDisplay(); // Initialize prompt
     });
   </script>
 </body>
