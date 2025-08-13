@@ -77,10 +77,19 @@
         .light-theme td {
             border-color: #ccc;
         }
+        .error-message, .success-message {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+        }
         .error-message {
             color: #ff4d4f;
-            margin-top: 10px;
-            display: none;
+            background-color: rgba(255, 77, 79, 0.1);
+        }
+        .success-message {
+            color: #4caf50;
+            background-color: rgba(76, 175, 80, 0.1);
         }
     </style>
 </head>
@@ -99,13 +108,14 @@
         <div class="admin-section">
             <h2>Add New Entry</h2>
             <div class="form-group">
-                <input type="text" id="new-name" placeholder="Name">
+                <input type="text" id="new-name" placeholder="Name" required>
             </div>
             <div class="form-group">
-                <input type="number" id="new-score" placeholder="Score">
+                <input type="number" id="new-score" placeholder="Score" min="0" required>
             </div>
             <button class="btn" onclick="addEntry()">Add</button>
-            <div id="error-message" class="error-message">Update failed: Data was modified by another user. Please try again.</div>
+            <div id="error-message" class="error-message"></div>
+            <div id="success-message" class="success-message"></div>
             <h2>Edit Entries</h2>
             <table id="admin-table">
                 <thead>
@@ -120,14 +130,15 @@
         </div>
     </div>
     <script>
-        const BLOB_URL = 'https://jsonblob.com/api/jsonBlob/1405072885638422528'; // Replace with your jsonblob.com URL
+        const BLOB_URL = 'https://jsonblob.com/api/jsonBlob/1405072885638422528';
+
         async function fetchLeaderboard() {
             try {
                 const response = await fetch(BLOB_URL, {
                     method: 'GET',
                     headers: { 'Content-Type': 'application/json' }
                 });
-                if (!response.ok) throw new Error('Failed to fetch leaderboard');
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 const data = await response.json();
                 return {
                     entries: Array.isArray(data.entries) ? data.entries : [],
@@ -147,11 +158,14 @@
                 }
             }
         }
+
         async function saveLeaderboard(data, expectedVersion) {
+            const errorMessage = document.getElementById('error-message');
+            const successMessage = document.getElementById('success-message');
             try {
                 const current = await fetchLeaderboard();
                 if (current.version !== expectedVersion) {
-                    throw new Error('Version mismatch');
+                    throw new Error('Version mismatch: Data was modified by another user');
                 }
                 const newData = { entries: data, version: current.version + 1 };
                 const response = await fetch(BLOB_URL, {
@@ -159,24 +173,33 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(newData)
                 });
-                if (!response.ok) throw new Error('Failed to save leaderboard');
-                localStorage.setItem('leaderboard', JSON.stringify(newData)); // Cache locally
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                localStorage.setItem('leaderboard', JSON.stringify(newData));
+                errorMessage.style.display = 'none';
+                successMessage.textContent = 'Changes saved successfully!';
+                successMessage.style.display = 'block';
+                setTimeout(() => successMessage.style.display = 'none', 3000);
                 return true;
             } catch (error) {
                 console.error('Error saving leaderboard:', error);
-                localStorage.setItem('leaderboard', JSON.stringify({ entries: data, version: expectedVersion })); // Cache fallback
+                localStorage.setItem('leaderboard', JSON.stringify({ entries: data, version: expectedVersion }));
+                errorMessage.textContent = error.message || 'Failed to save changes. Please try again.';
+                errorMessage.style.display = 'block';
+                successMessage.style.display = 'none';
                 return false;
             }
         }
+
         async function loadAdmin() {
             const { entries } = await fetchLeaderboard();
             const tbody = document.querySelector('#admin-table tbody');
+            if (!tbody) return;
             tbody.innerHTML = '';
             entries.forEach((entry, index) => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td><input type="text" value="${entry.name}" data-index="${index}" class="edit-name"></td>
-                    <td><input type="number" value="${entry.score}" data-index="${index}" class="edit-score"></td>
+                    <td><input type="text" value="${entry.name.replace(/"/g, '&quot;')}" data-index="${index}" class="edit-name" required></td>
+                    <td><input type="number" value="${entry.score}" data-index="${index}" class="edit-score" min="0" required></td>
                     <td>
                         <button class="btn secondary" onclick="saveEntry(${index})">Save</button>
                         <button class="btn secondary" onclick="deleteEntry(${index})">Delete</button>
@@ -185,63 +208,81 @@
                 tbody.appendChild(tr);
             });
         }
+
         async function addEntry() {
-            const name = document.getElementById('new-name').value.trim();
-            const score = parseInt(document.getElementById('new-score').value);
+            const nameInput = document.getElementById('new-name');
+            const scoreInput = document.getElementById('new-score');
+            const name = nameInput.value.trim();
+            const score = parseInt(scoreInput.value);
             const errorMessage = document.getElementById('error-message');
-            if (name && !isNaN(score)) {
-                const { entries, version } = await fetchLeaderboard();
-                entries.push({ name, score });
-                if (await saveLeaderboard(entries, version)) {
-                    loadAdmin();
-                    document.getElementById('new-name').value = '';
-                    document.getElementById('new-score').value = '';
-                    errorMessage.style.display = 'none';
-                } else {
-                    errorMessage.style.display = 'block';
-                }
+            const successMessage = document.getElementById('success-message');
+
+            if (!name || isNaN(score) || score < 0) {
+                errorMessage.textContent = 'Please enter a valid name and non-negative score.';
+                errorMessage.style.display = 'block';
+                successMessage.style.display = 'none';
+                return;
+            }
+
+            const { entries, version } = await fetchLeaderboard();
+            entries.push({ name, score });
+            if (await saveLeaderboard(entries, version)) {
+                await loadAdmin();
+                nameInput.value = '';
+                scoreInput.value = '';
             }
         }
+
         async function saveEntry(index) {
             const { entries, version } = await fetchLeaderboard();
             const nameInput = document.querySelector(`.edit-name[data-index="${index}"]`);
             const scoreInput = document.querySelector(`.edit-score[data-index="${index}"]`);
             const errorMessage = document.getElementById('error-message');
-            if (nameInput && scoreInput && entries[index]) {
-                entries[index].name = nameInput.value.trim();
-                entries[index].score = parseInt(scoreInput.value);
-                if (await saveLeaderboard(entries, version)) {
-                    loadAdmin();
-                    errorMessage.style.display = 'none';
-                } else {
-                    errorMessage.style.display = 'block';
-                }
+            const successMessage = document.getElementById('success-message');
+
+            if (!nameInput || !scoreInput || !entries[index]) {
+                errorMessage.textContent = 'Invalid entry. Please try again.';
+                errorMessage.style.display = 'block';
+                successMessage.style.display = 'none';
+                return;
+            }
+
+            const name = nameInput.value.trim();
+            const score = parseInt(scoreInput.value);
+            if (!name || isNaN(score) || score < 0) {
+                errorMessage.textContent = 'Please enter a valid name and non-negative score.';
+                errorMessage.style.display = 'block';
+                successMessage.style.display = 'none';
+                return;
+            }
+
+            entries[index].name = name;
+            entries[index].score = score;
+            if (await saveLeaderboard(entries, version)) {
+                await loadAdmin();
             }
         }
+
         async function deleteEntry(index) {
             const { entries, version } = await fetchLeaderboard();
-            const errorMessage = document.getElementById('error-message');
-            if (entries[index]) {
-                entries.splice(index, 1);
-                if (await saveLeaderboard(entries, version)) {
-                    loadAdmin();
-                    errorMessage.style.display = 'none';
-                } else {
-                    errorMessage.style.display = 'block';
-                }
+            if (!entries[index]) return;
+            entries.splice(index, 1);
+            if (await saveLeaderboard(entries, version)) {
+                await loadAdmin();
             }
         }
+
         function toggleTheme() {
             document.body.classList.toggle('light-theme');
             localStorage.setItem('theme', document.body.classList.contains('light-theme') ? 'light' : 'dark');
         }
+
         document.addEventListener('DOMContentLoaded', () => {
             const savedTheme = localStorage.getItem('theme');
             if (savedTheme === 'light') {
                 document.body.classList.add('light-theme');
             }
             loadAdmin();
-            setInterval(loadAdmin, 3000); // Poll every 3 seconds
         });
     </script>
 </body>
