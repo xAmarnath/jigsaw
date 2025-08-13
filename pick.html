@@ -162,11 +162,11 @@
       <div id="allocationPrompt">Team 1, pick a button!</div>
       <div id="allocationList">No teams allocated yet.</div>
       <div class="button-container">
-        <button class="pickBtn" data-button="1">Pick Button 1</button>
-        <button class="pickBtn" data-button="2">Pick Button 2</button>
-        <button class="pickBtn" data-button="3">Pick Button 3</button>
-        <button class="pickBtn" data-button="4">Pick Button 4</button>
-        <button class="pickBtn" data-button="5">Pick Button 5</button>
+        <button class="pickBtn" data-button="1">101</button>
+        <button class="pickBtn" data-button="2">102</button>
+        <button class="pickBtn" data-button="3">103</button>
+        <button class="pickBtn" data-button="4">104</button>
+        <button class="pickBtn" data-button="5">105</button>
       </div>
     </div>
   </div>
@@ -175,7 +175,7 @@
     const pickButtons = document.querySelectorAll('.pickBtn');
     const allocationList = document.getElementById('allocationList');
     const allocationPrompt = document.getElementById('allocationPrompt');
-    let availableSets = [101, 102, 103, 104, 105]; // Sets corresponding to 1-5
+    let availableSets = [1, 2, 3, 4, 5]; // Sets corresponding to 1-5
     let allocations = [];
     let currentTeamIndex = 0;
     const teams = ['Team 1', 'Team 2', 'Team 3', 'Team 4', 'Team 5'];
