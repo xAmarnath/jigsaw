@@ -6,92 +6,91 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-    body {
-        margin: 0;
-        font-family: 'Inter', sans-serif;
-        background-color: #0d0d0d;
-        color: #f0f0f0;
-        padding: 20px;
-    }
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: #0d0d0d;
+            color: #f0f0f0;
+            padding: 20px;
+        }
 
-    .light-theme {
-        background-color: #ffffff;
-        color: #000000;
-    }
+        .light-theme {
+            background-color: #ffffff;
+            color: #000000;
+        }
 
-    .header h1 {
-        text-align: center;
-        margin-bottom: 30px;
-    }
+        .header h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
 
-    .game-container {
-        max-width: 800px;
-        margin: 0 auto;
-    }
+        .game-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
 
-    .controls {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 20px;
-    }
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
 
-    .btn {
-        padding: 10px 15px;
-        background-color: #3a3a3a;
-        color: white;
-        border: none;
-        cursor: pointer;
-        border-radius: 5px;
-        text-decoration: none;
-        font-weight: 500;
-    }
+        .btn {
+            padding: 10px 15px;
+            background-color: #3a3a3a;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: 500;
+        }
 
-    .btn.secondary {
-        background-color: #5a5a5a;
-    }
+        .btn.secondary {
+            background-color: #5a5a5a;
+        }
 
-    .btn:hover {
-        opacity: 0.9;
-    }
+        .btn:hover {
+            opacity: 0.9;
+        }
 
-    .form-group {
-        margin-bottom: 10px;
-    }
+        .form-group {
+            margin-bottom: 10px;
+        }
 
-    input[type="text"],
-    input[type="number"] {
-        width: 100%;
-        padding: 8px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        box-sizing: border-box;
-    }
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
 
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 20px;
-    }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
 
-    th, td {
-        padding: 10px;
-        border: 1px solid #444;
-        text-align: left;
-    }
+        th, td {
+            padding: 10px;
+            border: 1px solid #444;
+            text-align: left;
+        }
 
-    .light-theme .btn {
-        background-color: #e0e0e0;
-        color: #000;
-    }
+        .light-theme .btn {
+            background-color: #e0e0e0;
+            color: #000;
+        }
 
-    .light-theme input,
-    .light-theme table,
-    .light-theme th,
-    .light-theme td {
-        border-color: #ccc;
-    }
-</style>
-
+        .light-theme input,
+        .light-theme table,
+        .light-theme th,
+        .light-theme td {
+            border-color: #ccc;
+        }
+    </style>
 </head>
 <body>
     <div class="cosmic-background">
@@ -133,8 +132,41 @@
     </div>
 
     <script>
-        function loadAdmin() {
-            const data = JSON.parse(localStorage.getItem('leaderboard') || '[]');
+        const BLOB_URL = 'https://jsonblob.com/api/jsonBlob/1405072885638422528'; // Replace with your jsonblob.com URL
+
+        async function fetchLeaderboard() {
+            try {
+                const response = await fetch(BLOB_URL, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                if (!response.ok) throw new Error('Failed to fetch leaderboard');
+                return await response.json();
+            } catch (error) {
+                console.error('Error fetching leaderboard:', error);
+                return JSON.parse(localStorage.getItem('leaderboard') || '[]'); // Fallback to localStorage
+            }
+        }
+
+        async function saveLeaderboard(data) {
+            try {
+                const response = await fetch(BLOB_URL, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                if (!response.ok) throw new Error('Failed to save leaderboard');
+                localStorage.setItem('leaderboard', JSON.stringify(data)); // Cache locally
+                return true;
+            } catch (error) {
+                console.error('Error saving leaderboard:', error);
+                localStorage.setItem('leaderboard', JSON.stringify(data)); // Cache locally as fallback
+                return false;
+            }
+        }
+
+        async function loadAdmin() {
+            const data = await fetchLeaderboard();
             const tbody = document.querySelector('#admin-table tbody');
             tbody.innerHTML = '';
             data.forEach((entry, index) => {
@@ -151,33 +183,33 @@
             });
         }
 
-        function addEntry() {
+        async function addEntry() {
             const name = document.getElementById('new-name').value.trim();
             const score = parseInt(document.getElementById('new-score').value);
             if (name && !isNaN(score)) {
-                const data = JSON.parse(localStorage.getItem('leaderboard') || '[]');
-                data.push({name, score});
-                localStorage.setItem('leaderboard', JSON.stringify(data));
+                const data = await fetchLeaderboard();
+                data.push({ name, score });
+                await saveLeaderboard(data);
                 loadAdmin();
                 document.getElementById('new-name').value = '';
                 document.getElementById('new-score').value = '';
             }
         }
 
-        function saveEntry(index) {
-            const data = JSON.parse(localStorage.getItem('leaderboard') || '[]');
+        async function saveEntry(index) {
+            const data = await fetchLeaderboard();
             const nameInput = document.querySelector(`.edit-name[data-index="${index}"]`);
             const scoreInput = document.querySelector(`.edit-score[data-index="${index}"]`);
             data[index].name = nameInput.value.trim();
             data[index].score = parseInt(scoreInput.value);
-            localStorage.setItem('leaderboard', JSON.stringify(data));
+            await saveLeaderboard(data);
             loadAdmin();
         }
 
-        function deleteEntry(index) {
-            const data = JSON.parse(localStorage.getItem('leaderboard') || '[]');
+        async function deleteEntry(index) {
+            const data = await fetchLeaderboard();
             data.splice(index, 1);
-            localStorage.setItem('leaderboard', JSON.stringify(data));
+            await saveLeaderboard(data);
             loadAdmin();
         }
 
@@ -192,6 +224,8 @@
                 document.body.classList.add('light-theme');
             }
             loadAdmin();
+            // Poll for updates Updating every 10 seconds
+            setInterval(loadAdmin, 10000);
         });
     </script>
 </body>
