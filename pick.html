@@ -56,8 +56,14 @@
       color: #111;
     }
 
-    #allocationList {
+    #allocationPrompt {
       font-size: 20px; color: #444;
+      margin-bottom: 20px; font-weight: 600;
+      min-height: 32px;
+    }
+
+    #allocationList {
+      font-size: 18px; color: #2563eb;
       margin-bottom: 20px; font-weight: 600;
       min-height: 100px;
     }
@@ -87,49 +93,69 @@
     <div id="allocationContainer">
       <img id="imagePlaceholder" src="https://envs.sh/dGy.jpg" alt="ISRO Logo" />
       <h1>Team Set Allocation</h1>
+      <div id="allocationPrompt">Enter team name and pick a button!</div>
+      <input type="text" id="teamInput" placeholder="Enter Team Name" style="padding: 10px; font-size: 16px; margin-bottom: 20px; border-radius: 5px; border: 1px solid #111; font-family: 'Space Grotesk', sans-serif;" />
       <div id="allocationList">No teams allocated yet.</div>
       <div>
-        <button class="teamBtn" data-team="Team 1">Allocate Team 1</button>
-        <button class="teamBtn" data-team="Team 2">Allocate Team 2</button>
-        <button class="teamBtn" data-team="Team 3">Allocate Team 3</button>
-        <button class="teamBtn" data-team="Team 4">Allocate Team 4</button>
-        <button class="teamBtn" data-team="Team 5">Allocate Team 5</button>
+        <button class="pickBtn" data-button="1">Pick Button 1</button>
+        <button class="pickBtn" data-button="2">Pick Button 2</button>
+        <button class="pickBtn" data-button="3">Pick Button 3</button>
+        <button class="pickBtn" data-button="4">Pick Button 4</button>
+        <button class="pickBtn" data-button="5">Pick Button 5</button>
       </div>
     </div>
   </div>
 
   <script>
-    const teamButtons = document.querySelectorAll('.teamBtn');
+    const pickButtons = document.querySelectorAll('.pickBtn');
     const allocationList = document.getElementById('allocationList');
+    const allocationPrompt = document.getElementById('allocationPrompt');
+    const teamInput = document.getElementById('teamInput');
     let availableSets = [101, 102, 103, 104, 105]; // Sets corresponding to 1-5
     let allocations = [];
 
     function updateAllocationDisplay() {
       if (allocations.length === 0) {
         allocationList.textContent = 'No teams allocated yet.';
+        allocationPrompt.textContent = 'Enter team name and pick a button!';
       } else {
         allocationList.innerHTML = allocations.map(({ team, set }) => `${team}: Set ${set}`).join('<br>');
+        if (availableSets.length > 0) {
+          allocationPrompt.textContent = `Teams allocated: ${allocations.length}/5. Enter team name and pick a button!`;
+        } else {
+          allocationPrompt.textContent = 'All sets allocated!';
+          pickButtons.forEach(btn => btn.disabled = true);
+          teamInput.disabled = true;
+        }
       }
     }
 
-    teamButtons.forEach(button => {
+    pickButtons.forEach(button => {
       button.addEventListener('click', () => {
+        const teamName = teamInput.value.trim();
+        if (!teamName) {
+          allocationPrompt.textContent = 'Please enter a team name!';
+          return;
+        }
         if (availableSets.length === 0) {
-          allocationList.textContent = 'All sets have been allocated!';
-          teamButtons.forEach(btn => btn.disabled = true);
+          allocationPrompt.textContent = 'All sets have been allocated!';
+          pickButtons.forEach(btn => btn.disabled = true);
+          teamInput.disabled = true;
           return;
         }
 
         // Pick a random set from availableSets
         const randomIndex = Math.floor(Math.random() * availableSets.length);
         const assignedSet = availableSets.splice(randomIndex, 1)[0];
-        const teamName = button.dataset.team;
 
         // Store allocation
         allocations.push({ team: teamName, set: assignedSet });
 
         // Disable the clicked button
         button.disabled = true;
+
+        // Clear input for next team
+        teamInput.value = '';
 
         // Update the display
         updateAllocationDisplay();
