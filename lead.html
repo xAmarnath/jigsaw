@@ -5,7 +5,10 @@
     <title>Pixel Quest Leaderboard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
+        :мель
+
         :root {
             --bg: #f8fafc;
             --card: #ffffff;
@@ -329,90 +332,8 @@
             }
         }
 
-        /* Floating Window Styles */
-        .floating-window {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            width: 300px;
-            max-height: 400px;
-            background: var(--card);
-            border: 2px solid var(--accent);
-            border-radius: 8px;
-            box-shadow: 0 4px 12px var(--shadow);
-            z-index: 1000;
-            overflow: hidden;
-            display: none; /* Hidden by default */
-        }
-
-        .floating-window-header {
-            background: var(--accent);
-            color: white;
-            padding: 8px;
-            font-family: 'Press Start 2P', cursive;
-            font-size: 14px;
-            text-align: center;
-            cursor: move; /* Draggable header */
-            user-select: none;
-        }
-
-        .floating-window-close {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            background: none;
-            border: none;
-            color: white;
-            font-size: 16px;
-            cursor: pointer;
-        }
-
-        .floating-leaderboard {
-            padding: 10px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            max-height: 350px;
-            overflow-y: auto;
-        }
-
-        .floating-leaderboard-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-family: 'Roboto', sans-serif;
-            font-size: 14px;
-            color: var(--text);
-        }
-
-        .floating-leaderboard-item.first {
-            font-weight: bold;
-            color: #FFD700;
-        }
-
-        .floating-leaderboard-item.second {
-            font-weight: bold;
-            color: #C0C0C0;
-        }
-
-        .floating-leaderboard-item.third {
-            font-weight: bold;
-            color: #CD7F32;
-        }
-
-        .floating-leaderboard-item span:first-child {
-            flex: 1;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .floating-leaderboard-item span:last-child {
-            font-weight: bold;
-            color: var(--accent);
-        }
-
-        .toggle-floating-button {
+        /* PiP-specific styles */
+        .pip-button {
             position: fixed;
             top: 20px;
             right: 20px;
@@ -428,9 +349,62 @@
             z-index: 100;
         }
 
-        .toggle-floating-button:hover {
+        .pip-button:hover {
             background: var(--accent-secondary);
             transform: scale(1.05);
+        }
+
+        video {
+            display: none; /* Hidden video for PiP */
+        }
+
+        /* Compact leaderboard for PiP */
+        .pip-leaderboard {
+            display: none; /* Hidden by default, used for PiP capture */
+            width: 300px;
+            max-height: 400px;
+            background: var(--card);
+            border: 2px solid var(--accent);
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: 0 4px 12px var(--shadow);
+        }
+
+        .pip-leaderboard-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: 'Roboto', sans-serif;
+            font-size: 14px;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+
+        .pip-leaderboard-item.first {
+            font-weight: bold;
+            color: #FFD700;
+        }
+
+        .pip-leaderboard-item.second {
+            font-weight: bold;
+            color: #C0C0C0;
+        }
+
+        .pip-leaderboard-item.third {
+            font-weight: bold;
+            color: #CD7F32;
+        }
+
+        .pip-leaderboard-item span:first-child {
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .pip-leaderboard-item span:last-child {
+            font-weight: bold;
+            color: var(--accent);
         }
 
         @media (max-width: 768px) {
@@ -465,21 +439,17 @@
                 height: 15px;
             }
 
-            .floating-window {
+            .pip-button {
+                padding: 6px 12px;
+                font-size: 12px;
+            }
+
+            .pip-leaderboard {
                 width: 250px;
                 max-height: 300px;
             }
 
-            .floating-leaderboard {
-                padding: 8px;
-            }
-
-            .floating-leaderboard-item {
-                font-size: 12px;
-            }
-
-            .toggle-floating-button {
-                padding: 6px 12px;
+            .pip-leaderboard-item {
                 font-size: 12px;
             }
         }
@@ -512,21 +482,17 @@
                 height: 12px;
             }
 
-            .floating-window {
+            .pip-button {
+                padding: 5px 10px;
+                font-size: 10px;
+            }
+
+            .pip-leaderboard {
                 width: 200px;
                 max-height: 250px;
             }
 
-            .floating-leaderboard {
-                padding: 6px;
-            }
-
-            .floating-leaderboard-item {
-                font-size: 10px;
-            }
-
-            .toggle-floating-button {
-                padding: 5px 10px;
+            .pip-leaderboard-item {
                 font-size: 10px;
             }
         }
@@ -558,15 +524,7 @@
         </div>
     </div>
 
-    <button class="toggle-floating-button" id="toggleFloating">Show Floating Leaderboard</button>
-
-    <div class="floating-window" id="floatingWindow">
-        <div class="floating-window-header" id="floatingHeader">
-            Leaderboard
-            <button class="floating-window-close" id="closeFloating">×</button>
-        </div>
-        <div class="floating-leaderboard" id="floatingLeaderboard"></div>
-    </div>
+    <button class="pip-button" id="pipButton">Enter PiP Mode</button>
 
     <div class="header">
         <h1>🎮 Quiz Final Leaderboard</h1>
@@ -574,7 +532,10 @@
 
     <div class="game-container">
         <div class="leaderboard" id="leaderboard"></div>
+        <div class="pip-leaderboard" id="pipLeaderboard"></div>
     </div>
+
+    <video id="pipVideo" autoplay muted></video>
 
     <script>
         const BLOB_URL = 'https://jsonblob.com/api/jsonBlob/1405072885638422528';
@@ -610,10 +571,10 @@
             const { entries } = await fetchLeaderboard();
             entries.sort((a, b) => b.score - a.score);
             const leaderboard = document.getElementById('leaderboard');
-            const floatingLeaderboard = document.getElementById('floatingLeaderboard');
-            if (!leaderboard || !floatingLeaderboard) return;
+            const pipLeaderboard = document.getElementById('pipLeaderboard');
+            if (!leaderboard || !pipLeaderboard) return;
             leaderboard.innerHTML = '';
-            floatingLeaderboard.innerHTML = '';
+            pipLeaderboard.innerHTML = '';
 
             entries.slice(0, 5).forEach((entry, index) => {
                 // Main leaderboard
@@ -636,15 +597,18 @@
                 `;
                 leaderboard.appendChild(card);
 
-                // Floating leaderboard
-                const floatItem = document.createElement('div');
-                floatItem.className = `floating-leaderboard-item ${placeClass}`;
-                floatItem.innerHTML = `
+                // PiP leaderboard
+                const pipItem = document.createElement('div');
+                pipItem.className = `pip-leaderboard-item ${placeClass}`;
+                pipItem.innerHTML = `
                     <span>${entry.name.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</span>
                     <span>${entry.score}</span>
                 `;
-                floatingLeaderboard.appendChild(floatItem);
+                pipLeaderboard.appendChild(pipItem);
             });
+
+            // Update canvas for PiP
+            updateCanvas();
         }
 
         function triggerConfetti() {
@@ -655,57 +619,106 @@
             }
         }
 
-        // Floating window controls
-        const floatingWindow = document.getElementById('floatingWindow');
-        const toggleButton = document.getElementById('toggleFloating');
-        const closeButton = document.getElementById('closeFloating');
-        const header = document.getElementById('floatingHeader');
+        // PiP functionality
+        const video = document.getElementById('pipVideo');
+        const pipButton = document.getElementById('pipButton');
+        const pipLeaderboard = document.getElementById('pipLeaderboard');
+        let canvas, stream, animationFrameId;
 
-        toggleButton.addEventListener('click', () => {
-            if (floatingWindow.style.display === 'block') {
-                floatingWindow.style.display = 'none';
-                toggleButton.textContent = 'Show Floating Leaderboard';
+        async function startPiP() {
+            if (!document.pictureInPictureEnabled) {
+                alert('Picture-in-Picture is not supported in this browser.');
+                return;
+            }
+
+            try {
+                // Create canvas
+                canvas = document.createElement('canvas');
+                canvas.width = 300; // Compact size for PiP
+                canvas.height = 400;
+                const ctx = canvas.getContext('2d');
+
+                // Start stream
+                stream = canvas.captureStream(30); // 30 FPS
+                video.srcObject = stream;
+
+                // Wait for video metadata
+                await new Promise((resolve, reject) => {
+                    video.onloadedmetadata = resolve;
+                    video.onerror = () => reject(new Error('Video metadata failed to load'));
+                    video.load();
+                });
+
+                // Start rendering loop
+                updateCanvasLoop();
+
+                // Request PiP
+                if (document.pictureInPictureElement) {
+                    await document.exitPictureInPicture();
+                }
+                await video.requestPictureInPicture();
+                pipButton.textContent = 'Exit PiP Mode';
+            } catch (error) {
+                console.error('Error entering PiP mode:', error);
+                alert('Failed to enter PiP mode: ' + error.message);
+            }
+        }
+
+        async function updateCanvas() {
+            if (!canvas || !pipLeaderboard) return;
+            const ctx = canvas.getContext('2d');
+            try {
+                const renderedCanvas = await html2canvas(pipLeaderboard, {
+                    scale: 1,
+                    backgroundColor: '#ffffff',
+                    useCORS: true,
+                    logging: false
+                });
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(renderedCanvas, 0, 0, canvas.width, canvas.height);
+            } catch (error) {
+                console.error('Error rendering canvas:', error);
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.font = '14px Roboto';
+                ctx.fillStyle = '#1f2937';
+                ctx.fillText('Error rendering leaderboard', 20, 50);
+            }
+        }
+
+        function updateCanvasLoop() {
+            if (!canvas || !stream) return;
+            updateCanvas();
+            animationFrameId = requestAnimationFrame(updateCanvasLoop);
+        }
+
+        pipButton.addEventListener('click', async () => {
+            if (document.pictureInPictureElement) {
+                await document.exitPictureInPicture();
+                pipButton.textContent = 'Enter PiP Mode';
+                if (animationFrameId) {
+                    cancelAnimationFrame(animationFrameId);
+                }
             } else {
-                floatingWindow.style.display = 'block';
-                toggleButton.textContent = 'Hide Floating Leaderboard';
+                await startPiP();
             }
         });
 
-        closeButton.addEventListener('click', () => {
-            floatingWindow.style.display = 'none';
-            toggleButton.textContent = 'Show Floating Leaderboard';
+        video.addEventListener('enterpictureinpicture', () => {
+            pipButton.textContent = 'Exit PiP Mode';
         });
 
-        // Draggable functionality
-        let isDragging = false;
-        let currentX;
-        let currentY;
-        let initialX;
-        let initialY;
-
-        header.addEventListener('mousedown', (e) => {
-            initialX = e.clientX - currentX;
-            initialY = e.clientY - currentY;
-            isDragging = true;
-        });
-
-        document.addEventListener('mousemove', (e) => {
-            if (isDragging) {
-                e.preventDefault();
-                currentX = e.clientX - initialX;
-                currentY = e.clientY - initialY;
-                floatingWindow.style.left = `${currentX}px`;
-                floatingWindow.style.top = `${currentY}px`;
+        video.addEventListener('leavepictureinpicture', () => {
+            pipButton.textContent = 'Enter PiP Mode';
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
             }
         });
-
-        document.addEventListener('mouseup', () => {
-            isDragging = false;
-        });
-
-        // Initialize floating window position
-        floatingWindow.style.left = '20px';
-        floatingWindow.style.top = '20px';
 
         document.addEventListener('DOMContentLoaded', () => {
             loadLeaderboard();
